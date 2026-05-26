@@ -1,43 +1,761 @@
-﻿<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>仙侠番茄钟</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><style>
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>仙侠番茄钟</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+
 *{margin:0;padding:0;box-sizing:border-box}
-.intro{position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at center,#1a1030 0%,#0a0a1a 60%,#050510 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s,transform 0.8s}
-.intro.hide{opacity:0;transform:scale(1.1);pointer-events:none}
-.is{position:relative;width:260px;height:260px;display:flex;align-items:center;justify-content:center}
-.orb{width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fef3c7,#f0d878 30%,#c9a44b 60%,rgba(201,164,75,0) 100%);box-shadow:0 0 60px rgba(240,216,120,0.6),0 0 120px rgba(201,164,75,0.3),0 0 200px rgba(167,139,250,0.15);animation:op 3s ease-in-out infinite;position:relative;z-index:2}
-.orb::after{content:"";position:absolute;inset:-30px;border-radius:50%;border:1px solid rgba(201,164,75,0.15);animation:oh 3s ease-in-out infinite}
-@keyframes op{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.15);opacity:1}}@keyframes oh{0%,100%{transform:scale(1);opacity:0}50%{transform:scale(1.4);opacity:.5}}
-.r1,.r2{position:absolute;border-radius:50%;border:1px solid rgba(201,164,75,0.2);animation:rs 8s linear infinite}.r1{width:180px;height:180px;border-color:rgba(201,164,75,.12)}.r2{width:240px;height:240px;animation-duration:14s;animation-direction:reverse;border-color:rgba(167,139,250,.1)}@keyframes rs{100%{transform:rotate(360deg)}}
-.rn{position:absolute;font-size:16px;color:rgba(201,164,75,.5);font-family:SimSun,KaiTi,serif;animation:rf 6s ease-in-out infinite;pointer-events:none}@keyframes rf{0%,100%{transform:translateY(0) scale(1);opacity:.4}50%{transform:translateY(-12px) scale(1.1);opacity:.7}}
-.it{font-family:SimSun,KaiTi,serif;font-size:28px;color:#c9a44b;letter-spacing:8px;margin-top:30px;text-shadow:0 0 20px rgba(201,164,75,.4);animation:fu 1s .3s both}.isb{font-size:12px;color:#6b5b8a;letter-spacing:4px;margin-top:8px;animation:fu 1s .6s both}@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.ib{margin-top:40px;background:transparent;border:1px solid #c9a44b;color:#c9a44b;padding:10px 40px;font-size:16px;letter-spacing:4px;font-family:SimSun,KaiTi,serif;cursor:pointer;border-radius:24px;transition:all .4s;animation:fu 1s .9s both}.ib:hover{background:rgba(201,164,75,.12);box-shadow:0 0 30px rgba(201,164,75,.3);color:#f0d878}
-body{font-family:Microsoft YaHei,PingFang SC,sans-serif;background:#0a0a1a;color:#d4c5a0;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px}
-.app{width:100%;max-width:400px;background:linear-gradient(180deg,#0d0d24,#141028);border:1px solid #2a1a3e;border-radius:20px;padding:28px 24px 24px;position:relative;animation:ai .6s .5s both}@keyframes ai{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+body{font-family:"Microsoft YaHei",sans-serif;background:#0a0a1a;color:#d4c5a0;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px}
+.intro{position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at center,#1a1030 0%,#0a0a1a 60%,#050510 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s}
+.intro.hide{opacity:0;pointer-events:none}
+.orb{width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fef3c7,#f0d878 30%,#c9a44b 60%,transparent);box-shadow:0 0 60px rgba(240,216,120,.6);animation:orbPulse 3s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.it{font-family:KaiTi,SimSun,serif;font-size:28px;color:#c9a44b;letter-spacing:8px;margin-top:30px;text-shadow:0 0 20px rgba(201,164,75,.4)}
+.isb{font-size:12px;color:#6b5b8a;letter-spacing:4px;margin-top:8px}
+.ib{margin-top:40px;background:transparent;border:1px solid #c9a44b;color:#c9a44b;padding:10px 40px;font-size:16px;letter-spacing:4px;cursor:pointer;border-radius:24px;transition:.4s}
+.ib:hover{background:rgba(201,164,75,.12);box-shadow:0 0 30px rgba(201,164,75,.3)}
+.authOverlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:900;display:flex;align-items:center;justify-content:center}
+.authOverlay.hidden{display:none}
+.authBox{background:linear-gradient(180deg,#141028,#0d0d24);border:1px solid #2a1a3e;border-radius:16px;padding:30px;width:90%;max-width:360px;text-align:center}
+.authBox h3{color:#c9a44b;letter-spacing:6px;margin-bottom:20px;font-size:20px}
+.authBox input{display:block;width:100%;margin:10px 0;padding:12px;background:#0a0a1a;border:1px solid #2a1a3e;border-radius:8px;color:#d4c5a0;font-size:14px}
+.authBox input:focus{outline:none;border-color:#c9a44b}
+.btn{width:100%;padding:12px;margin:6px 0;background:#c9a44b;color:#0a0a1a;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:bold;letter-spacing:2px;transition:.3s}
+.btn:hover{background:#f0d878}
+.btn.sec{background:transparent;color:#c9a44b;border:1px solid #c9a44b;font-size:13px;font-weight:normal;letter-spacing:1px}
+.alt{font-size:13px;color:#6b5b8a;cursor:pointer;margin-top:10px}
+.alt:hover{color:#c9a44b}
+.app{width:100%;max-width:420px;background:linear-gradient(180deg,#0d0d24,#141028);border:1px solid #2a1a3e;border-radius:20px;padding:24px 20px 20px;position:relative;display:none}
 .app::before{content:"";position:absolute;top:0;left:20px;right:20px;height:1px;background:linear-gradient(90deg,transparent,#c9a44b,transparent);opacity:.5}
-.hb{position:absolute;top:14px;left:18px;cursor:pointer;opacity:.5;z-index:10;background:none;border:none;color:#c9a44b;font-family:inherit;font-size:12px}.hb:hover{opacity:1}
-.realm{text-align:center;margin-bottom:6px}.rb{display:inline-block;background:linear-gradient(135deg,#2d1f0e,#5a3d1c);border:2px solid #c9a44b;border-radius:8px;padding:5px 20px;font-size:14px;letter-spacing:3px;font-family:SimSun,KaiTi,serif;color:#f0d878}.rt{font-size:11px;color:#a78bfa;margin-top:4px;letter-spacing:2px;font-family:SimSun,KaiTi,serif;opacity:.8}.rh{display:inline-block;margin-left:4px;font-size:14px;cursor:pointer;color:#6b5b8a;vertical-align:middle}.rh:hover{color:#c9a44b}
-.bw{margin-bottom:20px}.bl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}.bl span:first-child{color:#6b5b8a}.bl span:last-child{color:#c9a44b}.ba{height:6px;background:#1a1030;border-radius:3px;border:1px solid #2a1a3e;overflow:hidden}.bf{height:100%;width:0%;background:linear-gradient(90deg,#4a90d9,#a78bfa);border-radius:3px;box-shadow:0 0 8px rgba(167,139,250,.5);transition:width .6s}
-.tw{display:flex;justify-content:center;margin-bottom:24px}.tr{width:190px;height:190px;border-radius:50%;position:relative;background:conic-gradient(#c9a44b 0%,#0a0a1a 0%);box-shadow:0 0 30px rgba(201,164,75,.25),inset 0 0 20px rgba(0,0,0,.5)}.tr.ac{box-shadow:0 0 50px rgba(201,164,75,.5),0 0 60px rgba(167,139,250,.2),inset 0 0 30px rgba(0,0,0,.4)}.ti{position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle at center,#141028,#0a0a1a);display:flex;flex-direction:column;align-items:center;justify-content:center}.tt{font-size:46px;font-weight:bold;color:#f0d878;text-shadow:0 0 15px rgba(240,216,120,.5);font-variant-numeric:tabular-nums;letter-spacing:3px}.tl{font-size:12px;color:#7a6a4a;margin-top:6px;letter-spacing:2px}
-.ct{display:flex;gap:12px;justify-content:center;margin-bottom:20px}.btn{border:none;border-radius:22px;padding:10px 30px;font-size:14px;cursor:pointer;font-weight:bold;letter-spacing:1px;transition:all .2s;font-family:inherit}.bp{background:linear-gradient(180deg,#c9a44b,#8b6914);color:#1a1a1a}.bp:hover{opacity:.85;transform:translateY(-1px)}.bs{background:transparent;border:1px solid #6b5b8a;color:#c9a44b}.bs:hover{background:rgba(201,164,75,.1);border-color:#c9a44b}.sgBtn{background:linear-gradient(180deg,#a78bfa,#5a3d8a);color:#fff;border:none;border-radius:22px;padding:10px 30px;font-size:14px;cursor:pointer;font-weight:bold;letter-spacing:1px;transition:all .2s;font-family:inherit}.sgBtn:hover{opacity:.85;transform:translateY(-1px)}.sgBtn.on{background:linear-gradient(180deg,#c94b4b,#8a2020);animation:sgPulse 2s infinite}@keyframes sgPulse{0%,100%{box-shadow:0 0 0 rgba(201,75,75,0)}50%{box-shadow:0 0 20px rgba(201,75,75,.5)}}.sgInfo{text-align:center;font-size:10px;color:#7a6a4a;margin-top:8px}.sgInfo span{color:#c9a44b}.pnWrap{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}.pnInput{background:transparent;border:none;border-bottom:1px dashed #3a2a4e;color:#a78bfa;font-size:13px;text-align:center;padding:4px 8px;width:180px;font-family:inherit;letter-spacing:2px}.pnInput:focus{outline:none;border-bottom-color:#c9a44b;color:#f0d878}.pnInput::placeholder{color:#5a4a6e;letter-spacing:1px}.pnBtn{background:rgba(167,139,250,.08);border:1px solid #3a2a4e;color:#a78bfa;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap}.pnBtn:hover{background:rgba(167,139,250,.18);border-color:#a78bfa}
-.st{display:flex;justify-content:space-around;margin-bottom:12px;padding:12px 0;border-top:1px solid #2a1a3e;border-bottom:1px solid #2a1a3e}.si{text-align:center}.sv{font-size:20px;color:#f0d878;font-weight:bold}.sl{font-size:10px;color:#7a6a4a;margin-top:2px}
-.tb{display:flex;border-bottom:1px solid #2a1a3e;margin-bottom:12px}.tab{flex:1;text-align:center;padding:8px 0;font-size:12px;color:#6b5b8a;cursor:pointer;letter-spacing:2px;transition:all .2s;border-bottom:2px solid transparent}.tab.ac{color:#c9a44b;border-bottom-color:#c9a44b}.tc{display:none}.tc.ac{display:block}
-.pl{display:flex;gap:8px}.pill{flex:1;background:rgba(201,164,75,.06);border:1px solid #2a1a3e;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s}.pill:hover{border-color:#c9a44b;background:rgba(201,164,75,.12)}.pill.ud{opacity:.4;pointer-events:none}.pic{font-size:24px;margin-bottom:4px}.pnm{font-size:11px;font-weight:bold}.pds{font-size:9px;color:#7a6a4a;margin-top:2px}.pct{font-size:10px;color:#c9a44b;margin-top:4px}.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.ph h3{font-size:13px;color:#a78bfa;letter-spacing:2px}.sn{font-size:12px;color:#c9a44b}.ps{margin-top:auto}
-.sn{cursor:pointer;transition:all .2s;padding:2px 8px;border-radius:10px;border:1px solid transparent}.sn:hover{color:#f0d878;border-color:#c9a44b;background:rgba(201,164,75,.08)}
-.so{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;display:none;align-items:center;justify-content:center}.so.sh{display:flex}.sp{width:90%;max-width:380px;max-height:80vh;overflow-y:auto;background:linear-gradient(180deg,#141028,#0d0d24);border:1px solid #c9a44b;border-radius:16px;padding:20px;animation:pi .3s ease-out}.sc{float:right;background:none;border:none;color:#c9a44b;font-size:20px;cursor:pointer}.sg{display:flex;flex-direction:column;gap:10px}.shp{display:flex;align-items:center;background:rgba(201,164,75,.05);border:1px solid #2a1a3e;border-radius:10px;padding:12px 14px;transition:all .2s}.shp:hover{border-color:#c9a44b}.shp.ow{opacity:.5}.shpi{font-size:28px;margin-right:12px;flex-shrink:0;width:44px;height:44px;border-radius:50%;background:rgba(201,164,75,.08);display:flex;align-items:center;justify-content:center}.shpi2{flex:1}.shn{font-size:13px;font-weight:bold}.shd{font-size:10px;color:#7a6a4a;margin-top:2px}.sbuy{background:linear-gradient(180deg,#c9a44b,#8b6914);border:none;border-radius:14px;padding:6px 16px;font-size:12px;color:#1a1a1a;cursor:pointer;font-weight:bold;font-family:inherit;white-space:nowrap}.sbuy:hover{opacity:.85}.sbuy:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}.sbuy.owb{background:transparent;border:1px solid #4bc9a4;color:#4bc9a4;cursor:default}
-.im{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#141028 0%,#050510 100%);display:none;flex-direction:column;align-items:center;justify-content:center}.im.sh{display:flex}.im .imr{width:220px;height:220px;border-radius:50%;position:relative;background:conic-gradient(#c9a44b 0%,#0a0a1a 0%);box-shadow:0 0 60px rgba(201,164,75,.3),0 0 120px rgba(167,139,250,.15),inset 0 0 30px rgba(0,0,0,.5)}.im .imi{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle at center,#141028,#050510);display:flex;flex-direction:column;align-items:center;justify-content:center}.im .imt{font-size:56px;font-weight:bold;color:#f0d878;text-shadow:0 0 20px rgba(240,216,120,.6);font-variant-numeric:tabular-nums;letter-spacing:4px}.im .iml{font-size:14px;color:#7a6a4a;margin-top:8px;letter-spacing:3px}.im .imb{margin-top:40px;background:transparent;border:1px solid #6b5b8a;color:#c9a44b;padding:8px 30px;font-size:14px;letter-spacing:2px;cursor:pointer;border-radius:20px;font-family:inherit;transition:all .3s}.im .imb:hover{border-color:#c9a44b;background:rgba(201,164,75,.1)}.im .sgWarn{color:#c94b4b;font-size:13px;margin-top:20px;text-align:center;letter-spacing:2px;animation:pu .6s infinite alternate}.sgOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:250;display:none;align-items:center;justify-content:center}.sgOverlay.sh{display:flex}.sgBox{text-align:center;padding:30px 24px;background:linear-gradient(180deg,#2a0a0a,#0a0a1a);border:2px solid #c94b4b;border-radius:16px;animation:pi .4s ease-out;max-width:300px}.sgBox h3{font-size:18px;color:#c94b4b;margin-bottom:8px}.sgBox p{font-size:12px;color:#7a6a4a;margin-bottom:16px}.sgBox .btn{margin:4px}
-.authOverlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:900;display:none;align-items:center;justify-content:center}.authOverlay.sh{display:flex}.authBox{width:90%;max-width:340px;background:linear-gradient(180deg,#141028,#0d0d24);border:1px solid #c9a44b;border-radius:16px;padding:24px;animation:pi .3s ease-out}.authBox h3{text-align:center;font-size:18px;color:#f0d878;margin-bottom:16px;font-family:SimSun,KaiTi,serif;letter-spacing:3px}.authBox input{width:100%;background:#0a0a1a;border:1px solid #2a1a3e;color:#d4c5a0;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:10px;font-family:inherit}.authBox input:focus{outline:none;border-color:#c9a44b}.authBox .btn{width:100%;margin-bottom:8px}.authBox .alt{text-align:center;font-size:11px;color:#6b5b8a;cursor:pointer;margin-top:4px}.authBox .alt:hover{color:#c9a44b}
-.frSearch{display:flex;gap:8px;margin-bottom:16px}.frSearch input{flex:1;background:#0a0a1a;border:1px solid #2a1a3e;color:#d4c5a0;padding:8px 12px;border-radius:8px;font-size:12px;font-family:inherit}.frSearch input:focus{outline:none;border-color:#c9a44b}.frList{display:flex;flex-direction:column;gap:6px}.frItem{display:flex;align-items:center;justify-content:space-between;background:rgba(201,164,75,.05);border:1px solid #2a1a3e;border-radius:10px;padding:10px 14px}.frItem .frName{font-size:13px;color:#f0d878}.frItem .frInfo{font-size:10px;color:#6b5b8a}.frItem .frAct{background:linear-gradient(180deg,#c9a44b,#8b6914);border:none;border-radius:10px;padding:4px 12px;font-size:11px;color:#1a1a1a;cursor:pointer;font-family:inherit}.frItem .frAct.pending{background:#3a3a3a;color:#777;cursor:default}.lbTable{width:100%;font-size:11px;border-collapse:collapse}.lbTable th{color:#a78bfa;padding:6px 8px;border-bottom:1px solid #2a1a3e;text-align:left;font-size:10px}.lbTable td{padding:8px;border-bottom:1px solid #2a1a3e;color:#d4c5a0}.lbTable .me{background:rgba(201,164,75,.12);color:#f0d878;font-weight:bold}.lbTable .rank{color:#c9a44b;font-weight:bold}.userBar{display:flex;align-items:center;justify-content:space-between;padding:6px 0;margin-bottom:8px;border-bottom:1px solid #2a1a3e;font-size:11px}.userBar .uname{color:#f0d878;font-size:13px;font-weight:bold}.userBar .logout{color:#6b5b8a;cursor:pointer;font-size:10px}.userBar .logout:hover{color:#c94b4b}.ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center}.ov.sh{display:flex}.ob{text-align:center;padding:36px 28px;background:linear-gradient(180deg,#1a0a2e,#0a0a1a);border:2px solid #c9a44b;border-radius:16px;animation:pi .4s ease-out}@keyframes pi{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}.oi{font-size:50px;margin-bottom:10px;animation:pu .6s infinite alternate}@keyframes pu{from{transform:scale(1)}to{transform:scale(1.15)}}.ot{font-size:22px;color:#f0d878;font-weight:bold;margin-bottom:6px}.od{font-size:13px;color:#7a6a4a;margin-bottom:20px}.obtn{background:linear-gradient(180deg,#c9a44b,#8b6914);border:none;border-radius:20px;padding:10px 40px;font-size:14px;color:#1a1a1a;cursor:pointer;font-weight:bold;font-family:inherit}.sb{position:absolute;top:14px;right:18px;font-size:20px;cursor:pointer;opacity:.5;z-index:10;background:none;border:none;color:#c9a44b}.sb:hover{opacity:1}.spn{position:absolute;top:44px;right:16px;z-index:20;background:#141028;border:1px solid #c9a44b;border-radius:10px;padding:16px;width:200px;display:none}.spn.sh{display:block}.spn h4{font-size:13px;margin-bottom:10px;color:#c9a44b}.spn label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#7a6a4a;margin-bottom:8px}.spn input{width:56px;background:#0a0a1a;border:1px solid #2a1a3e;color:#c9a44b;padding:4px 6px;border-radius:4px;font-size:12px;text-align:center;font-family:inherit}.spn select{width:70px;background:#0a0a1a;border:1px solid #2a1a3e;color:#c9a44b;padding:4px 4px;border-radius:4px;font-size:11px;font-family:inherit}.spn .btn{width:100%;margin-top:4px;padding:8px;font-size:12px}.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#141028;border:1px solid #c9a44b;border-radius:10px;padding:10px 20px;z-index:300;font-size:13px;color:#f0d878;animation:tia .3s,toa .3s 2s forwards;pointer-events:none;text-align:center}@keyframes tia{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}@keyframes toa{from{opacity:1}to{opacity:0}}</style></head><body>
-<div class="intro" id="intro"><div class="is"><div class="orb"></div><div class="r1"></div><div class="r2"></div><span class="rn" style="top:20px;left:50px;animation-delay:0s">道</span><span class="rn" style="top:40px;right:40px;animation-delay:1s">天</span><span class="rn" style="bottom:30px;right:55px;animation-delay:2s">法</span><span class="rn" style="bottom:50px;left:35px;animation-delay:0.5s">心</span><span class="rn" style="top:70px;left:18px;animation-delay:1.5s">灵</span><span class="rn" style="bottom:80px;right:18px;animation-delay:2.5s">悟</span></div><div class="it">天道共鸣</div><div class="isb">心若冰清 · 天塌不惊</div><button class="ib" id="introBtn">悟 道</button></div><div class="authOverlay sh" id="authOverlay"><div class="authBox" id="authBox"><h3 id="authTitle">登 录</h3><input type="email" id="authEmail" placeholder="邮箱"><input type="password" id="authPassword" placeholder="密码"><input type="text" id="authUsername" placeholder="修炼道号（注册时填写）" style="display:none"><button class="btn bp" id="authSubmit">登录</button><div class="alt" id="authSwitch">还没有账号？去注册</div></div></div><div class="app" id="mainApp" style="display:none"><div class="userBar"><span class="uname" id="userName"></span><span class="logout" id="logoutBtn">退出登录</span></div><button class="sb" id="settingsBtn">&#9881;</button><div class="spn" id="settingsPanel"><h4>修炼设置</h4><label>专注时长(分) <input type="number" id="setFocus" min="1" max="120" value="25"></label><label>休息时长(分) <input type="number" id="setBreak" min="1" max="60" value="5"></label><label>每日破关次数 <input type="number" id="setSgQuota" min="0" max="5" value="3"></label><label>破关惩罚 <select id="setSgPenalty"><option value="0">不扣除灵石</option><option value="30">扣除30%灵石</option><option value="50" selected>扣除一半灵石</option><option value="70">扣除70%灵石</option><option value="100">扣除全部灵石</option></select></label><button class="btn bp" id="saveSettings">保存</button></div><div class="realm"><div class="rb" id="realmBadge">练气期</div><span class="rh" id="realmHelp">?</span><div class="rt" id="realmTitle">初入仙途</div></div><div class="bw"><div class="bl"><span>灵力</span><span id="expLabel">0 / 100</span></div><div class="ba"><div class="bf" id="spiritFill"></div></div></div><div class="pnWrap"><input class="pnInput" id="projectName" placeholder="输入修炼项目名称" maxlength="20"><button class="pnBtn" id="psBtn">常修</button></div><div class="tw"><div class="tr" id="timerRing"><div class="ti"><div class="tt" id="timerTime">25:00</div><div class="tl" id="timerLabel">准备修炼</div></div></div></div><div class="ct"><button class="btn bp" id="btnStart">开始修炼</button><button class="sgBtn" id="sgBtn">闭关</button><button class="btn bs" id="btnSkip" style="display:none">提前结束</button></div><div class="sgInfo">今日破关：<span id="sgQuota">0</span> / <span id="sgMax">3</span></div><div class="st"><div class="si"><div class="sv" id="statSessions">0</div><div class="sl">修炼次数</div></div><div class="si"><div class="sv" id="statMinutes">0</div><div class="sl">修炼时长(分)</div></div><div class="si"><div class="sv" id="statStones">0</div><div class="sl">灵石</div></div></div><div class="tb"><div class="tab ac" data-tab="cultivation">修炼</div><div class="tab" data-tab="log">日志</div><div class="tab" data-tab="friends">好友</div><div class="tab" data-tab="leaderboard">排行</div></div>
-<div class="tc ac" id="tabCultivation"><div class="ps"><div class="ph"><h3>丹药</h3><span class="sn" id="stonesDisplay">0 灵石</span></div><div class="pl"><div class="pill" onclick="usePill('focus')" id="pillFocus"><div class="pic">&#128138;</div><div class="pnm">专注丹</div><div class="pds">灵石+50%</div><div class="pct">x<span id="pillFocusCount">1</span></div></div><div class="pill" onclick="usePill('double')" id="pillDouble"><div class="pic">&#128142;</div><div class="pnm">双倍丹</div><div class="pds">经验翻倍</div><div class="pct">x<span id="pillDoubleCount">0</span></div></div><div class="pill" onclick="usePill('extend')" id="pillExtend"><div class="pic">&#9203;</div><div class="pnm">延时沙漏</div><div class="pds">专注+10分钟</div><div class="pct">x<span id="pillExtendCount">0</span></div></div></div></div></div><div class="tc" id="tabLog"><div class="ls"><div class="lsi"><span>今日修炼</span><strong id="logToday">0</strong></div><div class="lsi"><span>今日灵石</span><strong id="logTodayStones">0</strong></div><div class="lsi"><span>累计修炼</span><strong id="logTotal">0</strong></div></div><div class="ll" id="logList"><div class="lem">尚未开始修炼，快去悟道吧</div></div></div><div class="tc" id="tabFriends"><div class="frSearch"><input type="text" id="frSearchInput" placeholder="搜索道友道号"><button class="btn bp" id="frSearchBtn" style="padding:8px 14px;font-size:12px">搜索</button></div><div class="frList" id="frList"><div class="lem">加载中...</div></div></div><div class="tc" id="tabLeaderboard"><table class="lbTable"><thead><tr><th>排名</th><th>道号</th><th>境界</th><th>灵石</th></tr></thead><tbody id="lbBody"><tr><td class="lem" colspan="4">加载中...</td></tr></tbody></table></div></div></div>
-<div class="so" id="shopOverlay"><div class="sp"><button class="sc" id="shopClose">&times;</button><h3>仙 盟 商 城</h3><div class="sbal">当前灵石：<span id="shopBalance" style="color:#c9a44b">0</span></div><div class="sg"><div class="shp" id="shopFocus"><div class="shpi">&#128138;</div><div class="shpi2"><div class="shn">专注丹</div><div class="shd">下轮修炼灵石收益 +50%</div></div><button class="sbuy" onclick="buyItem('focus')">30 灵石</button></div><div class="shp" id="shopDouble"><div class="shpi">&#128142;</div><div class="shpi2"><div class="shn">双倍丹</div><div class="shd">下轮修炼经验翻倍</div></div><button class="sbuy" onclick="buyItem('double')">50 灵石</button></div><div class="shp" id="shopExtend"><div class="shpi">&#9203;</div><div class="shpi2"><div class="shn">延时沙漏</div><div class="shd">专注时长 +10 分钟</div></div><button class="sbuy" onclick="buyItem('extend')">40 灵石</button></div><div class="shp" id="shopTribulation"><div class="shpi">&#9889;</div><div class="shpi2"><div class="shn">渡劫符</div><div class="shd">一次中途放弃修炼不扣灵石</div></div><button class="sbuy" onclick="buyItem('tribulation')">80 灵石</button></div><div class="shp" id="shopArray"><div class="shpi">&#127757;</div><div class="shpi2"><div class="shn">聚灵阵</div><div class="shd">永久：每次修炼额外 +2 灵石</div></div><button class="sbuy" id="buyArray" onclick="buyItem('array')">200 灵石</button></div></div></div></div><div class="im" id="immersive"><div class="imr" id="imRing"><div class="imi"><div class="imt" id="imTime">25:00</div><div class="iml" id="imLabel">修炼中···</div></div></div><button class="imb" id="imBack">返回</button><div class="sgWarn" id="sgWarn" style="display:none">闭关中 · 无法退出</div></div><div class="ov" id="btOverlay"><div class="ob"><div class="oi" id="btIcon">&#127775;</div><div class="ot" id="btTitle"></div><div class="od" id="btDesc"></div><button class="obtn" id="btOk">继续修炼</button></div></div><div class="rHelp" id="rHelpOverlay"><div class="rHelpBox"><button class="rHelpClose" id="rHelpClose">&times;</button><h3>境界说明</h3><table class="rHelpTable"><tr><th>境界</th><th>所需灵力</th><th>封号</th></tr><tr class="cur" id="rHelp0"><td>练气期</td><td>100 经验</td><td>初入仙途</td></tr><tr id="rHelp1"><td>筑基期</td><td>300 经验</td><td>道基初成</td></tr><tr id="rHelp2"><td>金丹期</td><td>600 经验</td><td>金丹大成</td></tr><tr id="rHelp3"><td>元婴期</td><td>1200 经验</td><td>元婴出世</td></tr><tr id="rHelp4"><td>化神期</td><td>2500 经验</td><td>化神登仙</td></tr></table><div class="rHelpDesc">每次完成专注修炼可获得 20~30 灵力经验。使用双倍丹可翻倍获取。经验满后自动突破下一境界。奖励与修炼时长成正比（25分钟为基准）。</div></div></div><div class="psOverlay" id="psOverlay"><div class="psBox"><button class="psClose" id="psClose">&times;</button><h3>常用项目</h3><div class="psList" id="psList"><div class="psEmpty">还没有保存的项目</div></div><button class="psSave" id="psSaveBtn">保存当前项目</button></div></div><div class="sgOverlay" id="sgOverlay"><div class="sgBox"><h3>⚠ 破关</h3><p>你离开了闭关界面！<br>扣除灵石：<span id="sgPenaltyText" style="color:#c94b4b">0</span><br>剩余破关次数：<span id="sgLeft" style="color:#c9a44b">3</span></p><button class="obtn" id="sgOk">知道了</button></div></div>
-<script>var SB=null;try{if(typeof supabase!=="undefined"){SB=supabase.createClient("https://wlodirkqpbeovblpmpco.supabase.co","sb_publishable_cCf7ejwzDc9E-FeP7LGeeQ_LSs1jPJR")}}catch(e){console.error("Supabase init failed:",e)}var user=null,profile=null;var isRegister=false;var netOk=!!SB;function $(id){return document.getElementById(id)}function toast(msg){var t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},2500)}
-var ac=null;function gac(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac}function pn(f,s,d,v,t){var c=gac(),o=c.createOscillator(),g=c.createGain();o.type=t||"triangle";o.frequency.value=f;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(0.001,s+d);o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d)}function sndI(){var c=gac(),t=c.currentTime;[261.63,329.63,392,523.25].forEach(function(f,i){pn(f,t+i*0.2,0.8,0.08,"sine")})}function sndC(){var c=gac(),t=c.currentTime;[392,440,523.25,659.25,783.99].forEach(function(f,i){pn(f,t+i*0.15,0.5,0.1,"triangle")})}function sndS(){var c=gac(),t=c.currentTime;pn(196,t,1.2,0.06,"sine");pn(261.63,t+0.15,1,0.05,"sine")}function sndB(){var c=gac(),t=c.currentTime;pn(523.25,t,0.6,0.08,"sine");pn(659.25,t+0.15,0.6,0.08,"sine")}function sndT(){var c=gac(),t=c.currentTime;[392,523.25,659.25,783.99,1046.5,783.99,1046.5,1318.5].forEach(function(f,i){pn(f,t+i*0.1,0.7,0.12,"triangle")})}function sndBuy(){var c=gac(),t=c.currentTime;pn(880,t,0.3,0.1,"sine");pn(1046.5,t+0.1,0.3,0.1,"sine")}
-var RL=[{name:"练气期",title:"初入仙途",exp:100,icon:"🌱"},{name:"筑基期",title:"道基初成",exp:300,icon:"🏛️"},{name:"金丹期",title:"金丹大成",exp:600,icon:"💛"},{name:"元婴期",title:"元婴出世",exp:1200,icon:"✨"},{name:"化神期",title:"化神登仙",exp:2500,icon:"👑"}];var SP=[{id:"focus",name:"专注丹",desc:"下轮修炼灵石收益 +50%",price:30},{id:"double",name:"双倍丹",desc:"下轮修炼经验翻倍",price:50},{id:"extend",name:"延时沙漏",desc:"专注时长 +10 分钟",price:40},{id:"tribulation",name:"渡劫符",desc:"一次中途放弃修炼不扣灵石",price:80},{id:"array",name:"聚灵阵",desc:"永久：每次修炼额外 +2 灵石",price:200}];var AC=[{id:"first",name:"初窥门径",desc:"完成第1次修炼",icon:"🔰",exp:10},{id:"ten",name:"勤修不辍",desc:"累计完成10次修炼",icon:"📿",exp:30},{id:"fifty",name:"道心坚定",desc:"累计完成50次修炼",icon:"🎯",exp:60},{id:"hundred",name:"道心通明",desc:"累计完成100次修炼",icon:"🔮",exp:100},{id:"hour1",name:"一日之修",desc:"累计修炼1小时",icon:"⏳",exp:15},{id:"hour10",name:"十日之功",desc:"累计修炼10小时",icon:"⌛",exp:40},{id:"hour100",name:"百日筑基",desc:"累计修炼100小时",icon:"🕰️",exp:80},{id:"stone100",name:"小有积蓄",desc:"累计获得100灵石",icon:"🪙",exp:20},{id:"stone500",name:"富甲一方",desc:"累计获得500灵石",icon:"💰",exp:50},{id:"stone2000",name:"灵石如山",desc:"累计获得2000灵石",icon:"💎",exp:100},{id:"r1",name:"筑基有成",desc:"突破至筑基期",icon:"🏛️",exp:25},{id:"r2",name:"金丹大道",desc:"突破至金丹期",icon:"💛",exp:50},{id:"r3",name:"元婴出世",desc:"突破至元婴期",icon:"✨",exp:80},{id:"r4",name:"化神登仙",desc:"突破至化神期",icon:"👑",exp:120},{id:"day5",name:"一日千里",desc:"单日完成5次修炼",icon:"⚡",exp:30},{id:"sg10",name:"闭关达人",desc:"累计闭关完成10次",icon:"🧘",exp:50},{id:"pill10",name:"丹道初窥",desc:"累计使用10颗丹药",icon:"🧪",exp:30},{id:"streak7",name:"连续七日",desc:"连续7天修炼",icon:"📅",exp:60},{id:"nobreak",name:"零破关",desc:"一整天闭关零破关",icon:"🛡️",exp:40},{id:"array",name:"聚灵之主",desc:"购买聚灵阵",icon:"🌐",exp:50}];
-var authMode="login";function showAuth(){document.getElementById("authOverlay").classList.add("sh")}function hideAuth(){document.getElementById("authOverlay").classList.remove("sh")}document.getElementById("authSwitch").addEventListener("click",function(){if(!SB){toast("网络连接中...");return}authMode=authMode==="login"?"register":"login";document.getElementById("authTitle").textContent=authMode==="login"?"登 录":"注 册";document.getElementById("authUsername").style.display=authMode==="login"?"none":"block";document.getElementById("authSubmit").textContent=authMode==="login"?"登录":"注册";document.getElementById("authSwitch").textContent=authMode==="login"?"还没有账号？去注册":"已有账号？去登录"});document.getElementById("authSubmit").addEventListener("click",async function(){if(!SB){toast("网络连接中，请刷新页面重试");return}var email=document.getElementById("authEmail").value.trim();var password=document.getElementById("authPassword").value;var username=document.getElementById("authUsername").value.trim();if(!email||!password){toast("请填写邮箱和密码");return}if(authMode==="register"){if(!username){toast("请填写修炼道号");return}var{data:sd,error}=await SB.auth.signUp({email:email,password:password});if(error){toast("注册失败："+error.message);return}if(!sd.user){toast("注册失败");return}var{error:pe}=await SB.from("profiles").insert({id:sd.user.id,username:username});if(pe){toast("创建资料失败："+pe.message);return}if(sd.session){user=sd.user;await loadProfile();hideAuth();$("mainApp").style.display="";initApp();toast("注册成功！欢迎踏入仙途")}else{toast("注册成功！请检查邮箱确认")}return}else{var{data,error}=await SB.auth.signInWithPassword({email:email,password:password});if(error){toast("登录失败："+error.message);return}user=data.user;await loadProfile();hideAuth();$("mainApp").style.display="";initApp()}});
-async function loadProfile(){var{data,error}=await SB.from("profiles").select("*").eq("id",user.id).single();if(data){profile=data;return}if(!data){var{error:ie}=await SB.from("profiles").insert({id:user.id,username:user.email.split("@")[0]});if(!ie){var{data:d2}=await SB.from("profiles").select("*").eq("id",user.id).single();profile=d2}}}$("introBtn").addEventListener("click",function(){sndI();$("intro").classList.add("hide");setTimeout(function(){$("intro").style.display="none";showAuth()},800)});$("logoutBtn").addEventListener("click",async function(){await SB.auth.signOut();user=null;profile=null;$("mainApp").style.display="none";showAuth();clearInterval(timer)});async function syncProfile(){if(!user||!profile)return;await SB.from("profiles").update({realm_stage:profile.realm_stage,realm_exp:profile.realm_exp,spirit_stones:profile.spirit_stones,total_sessions:profile.total_sessions,total_minutes:profile.total_minutes}).eq("id",user.id)}var G={realm:{stage:0,exp:0},stats:{sessions:0,minutes:0,stones:0},pills:{focus:1,double:0,extend:0,tribulation:0},ap:{focus:false,double:false,extend:false,tribulation:false},upgrades:{spiritArray:false},settings:{focusTime:25,breakTime:5,sgQuota:3},sg:{exitsToday:0,sgDate:"",active:false,penalty:50,sgCompleted:0,streakDays:0,lastStreakDate:"",noBreakToday:true},projectName:"",presets:[],achievements:{}};
-var state="idle",sec=25*60,total=sec,timer=null;function fmt(s){var m=Math.floor(s/60),se=s%60;return String(m).padStart(2,"0")+":"+String(se).padStart(2,"0")}async function initApp(){if(profile){G.realm.stage=profile.realm_stage||0;G.realm.exp=profile.realm_exp||0;G.stats.stones=profile.spirit_stones||0;G.stats.sessions=profile.total_sessions||0;G.stats.minutes=profile.total_minutes||0}$("userName").textContent=profile?profile.username:"道友";sec=G.settings.focusTime*60;total=sec;uR();uS();uP();uT();updSG()}$("stonesDisplay").addEventListener("click",function(){$("shopOverlay").classList.add("sh");uShop()});function uR(){var r=RL[G.realm.stage];$("realmBadge").textContent=r.name;$("realmTitle").textContent=r.title;$("expLabel").textContent=G.realm.exp+" / "+r.exp;$("spiritFill").style.width=Math.min(G.realm.exp/r.exp*100,100)+"%"}function uS(){$("statSessions").textContent=G.stats.sessions;$("statMinutes").textContent=G.stats.minutes;$("statStones").textContent=G.stats.stones;$("stonesDisplay").textContent=G.stats.stones+" 灵石"}function uP(){$("pillFocusCount").textContent=G.pills.focus;$("pillDoubleCount").textContent=G.pills.double;$("pillExtendCount").textContent=G.pills.extend;["focus","double","extend"].forEach(function(t){var el=$("pill"+t.charAt(0).toUpperCase()+t.slice(1));if(!el)return;if(G.ap[t])el.classList.add("ud");else el.classList.remove("ud")})}function updSG(){$("sgQuota").textContent=G.sg.exitsToday;$("sgMax").textContent=G.settings.sgQuota;var btn=$("sgBtn");if(G.sg.active){btn.textContent="闭关中";btn.classList.add("on")}else{btn.textContent="闭关";btn.classList.remove("on")}}
-function uT(){$("timerTime").textContent=fmt(sec);var pct=total>0?(total-sec)/total*100:0;$("timerRing").style.background="conic-gradient(#c9a44b "+pct+"%,#0a0a1a 0%)";$("imRing").style.background="conic-gradient(#c9a44b "+pct+"%,#0a0a1a 0%)";$("imTime").textContent=fmt(sec);var l=$("timerLabel"),bs=$("btnStart"),bk=$("btnSkip"),r=$("timerRing"),il=$("imLabel");switch(state){case"idle":l.textContent="准备修炼";bs.textContent="开始修炼";bk.style.display="none";r.classList.remove("ac");il.textContent="准备修炼";break;case"focusing":l.textContent="修炼中···";bs.textContent=G.sg.active?"闭关中":"暂停";bk.style.display=G.sg.active?"none":"inline-block";r.classList.add("ac");il.textContent="修炼中···";break;case"breaking":l.textContent="调息中···";bs.textContent="暂停";bk.style.display="inline-block";r.classList.add("ac");il.textContent="调息中···";break;case"paused":l.textContent="已暂停";bs.textContent="继续";bk.style.display="none";r.classList.remove("ac");il.textContent="已暂停";break}}function sT(type){state=type;sec=(type==="focusing"?G.settings.focusTime+(G.ap.extend?10:0):G.settings.breakTime)*60;total=sec;uT();timer=setInterval(tick,1000)}function tick(){sec--;if(sec<=0){clearInterval(timer);finish();return}uT()}async function finish(){var wf=state==="focusing";if(wf){G.stats.sessions++;var dur=G.settings.focusTime+(G.ap.extend?10:0);G.stats.minutes+=dur;var baseSt=10+Math.floor(Math.random()*6);var baseXp=20+Math.floor(Math.random()*11);var scale=dur/25;var st=Math.floor(baseSt*scale);var xp=Math.floor(baseXp*scale);if(G.upgrades.spiritArray)st+=2;var sgBonus=G.sg.active;if(sgBonus){st=Math.floor(st*2);G.sg.sgCompleted=(G.sg.sgCompleted||0)+1;G.sg.active=false;$("immersive").classList.remove("sh");$("imBack").style.display="";$("sgWarn").style.display="none";updSG();toast("闭关完成！奖励翻倍！")}if(G.ap.focus)st=Math.floor(st*1.5);if(G.ap.double)xp=Math.floor(xp*2);G.stats.stones+=st;G.realm.exp+=xp;var pn=G.projectName||"修炼";var desc="["+pn+"] 修炼完成（"+dur+"分钟）";if(G.ap.focus||G.ap.double||G.ap.extend){var tags=[];if(G.ap.focus)tags.push("专注");if(G.ap.double)tags.push("双倍");if(G.ap.extend)tags.push("延时");desc="["+pn+"] 修炼完成（"+dur+"分钟）["+tags.join("+")+"]"}await aL(desc,st,xp);var cr=RL[G.realm.stage];if(G.realm.exp>=cr.exp&&G.realm.stage<RL.length-1){G.realm.exp-=cr.exp;G.realm.stage++;var nr=RL[G.realm.stage];G.stats.stones+=50;G.pills.double++;await aL("突破至"+nr.name,50,0);showBT(nr)}checkAC();G.ap.focus=false;G.ap.double=false;G.ap.extend=false;G.ap.tribulation=false;await syncProfile();uR();uS();uP();sndC();sT("breaking")}else{state="idle";sec=G.settings.focusTime*60;total=sec;await syncProfile();uR();uS();uP();uT();sndB()}}
-function skipTimer(){if(state!=="focusing"){clearInterval(timer);state="idle";sec=G.settings.focusTime*60;total=sec;uT();return}if(G.ap.tribulation){G.ap.tribulation=false;G.ap.focus=false;G.ap.double=false;G.ap.extend=false;clearInterval(timer);state="idle";sec=G.settings.focusTime*60;total=sec;uP();uT();toast("渡劫符抵消了惩罚");return}if(!confirm("确定提前结束吗？"))return;clearInterval(timer);G.stats.stones=Math.max(0,G.stats.stones-5);G.ap.focus=false;G.ap.double=false;G.ap.extend=false;G.ap.tribulation=false;state="idle";sec=G.settings.focusTime*60;total=sec;uR();uS();uP();uT()}function usePill(type){if(G.pills[type]<=0)return;if(state!=="idle"){toast("只能在修炼前使用丹药");return}if(type==="tribulation"){toast("渡劫符无需使用，放弃修炼时自动生效");return}if(G.ap[type])return;G.pills[type]--;G.ap[type]=true;G.stats.pillsUsed=(G.stats.pillsUsed||0)+1;uP();var names={focus:"专注丹",double:"双倍丹",extend:"延时沙漏"};toast("使用 "+names[type])}function buyItem(id){if(state!=="idle"&&id!=="array"){toast("只能在修炼前购买丹药");return}var item=null;for(var i=0;i<SP.length;i++){if(SP[i].id===id){item=SP[i];break}}if(!item)return;if(id==="array"){if(G.upgrades.spiritArray){toast("已拥有聚灵阵");return}if(G.stats.stones<item.price){toast("灵石不足");return}G.stats.stones-=item.price;G.upgrades.spiritArray=true;uS();uShop();sndBuy();toast("获得聚灵阵！")}else{if(G.stats.stones<item.price){toast("灵石不足");return}G.stats.stones-=item.price;G.pills[id]=(G.pills[id]||0)+1;uS();uP();uShop();sndBuy();toast("获得 "+item.name)}}function uShop(){SP.forEach(function(item){var el=$("shop"+item.id.charAt(0).toUpperCase()+item.id.slice(1));if(!el)return;var btn=el.querySelector("button");if(!btn)return;if(item.id==="array"){if(G.upgrades.spiritArray){el.classList.add("ow");btn.textContent="已拥有";btn.classList.add("owb");btn.disabled=true}else{el.classList.remove("ow");btn.textContent=item.price+" 灵石";btn.classList.remove("owb");btn.disabled=G.stats.stones<item.price}}else{el.classList.remove("ow");btn.textContent=item.price+" 灵石";btn.classList.remove("owb");btn.disabled=G.stats.stones<item.price}});$("shopBalance").textContent=G.stats.stones}
-function startSG(){if(state!=="idle"){toast("请先完成当前修炼");return}if(G.sg.exitsToday>=G.settings.sgQuota){toast("今日破关次数已用完！");return}G.sg.active=true;sndS();sT("focusing");$("immersive").classList.add("sh");$("imBack").style.display="none";$("sgWarn").style.display="block";updSG()}function endSG(forced){if(!G.sg.active)return;G.sg.active=false;if(forced){G.sg.exitsToday++;G.sg.noBreakToday=false;var lost=0;if(G.sg.penalty>0){lost=Math.floor(G.stats.stones*G.sg.penalty/100);G.stats.stones=Math.max(0,G.stats.stones-lost)}$("sgPenaltyText").textContent=lost;if(state==="focusing"||state==="breaking"){clearInterval(timer);state="idle";sec=G.settings.focusTime*60;total=sec}$("sgLeft").textContent=G.settings.sgQuota-G.sg.exitsToday;$("sgOverlay").classList.add("sh");uS()}$("immersive").classList.remove("sh");$("imBack").style.display="";$("sgWarn").style.display="none";updSG();uT()}async function aL(desc,stones,exp){var n=new Date();var ds=n.toISOString();if(user)await SB.from("training_logs").insert({user_id:user.id,description:desc,stones_earned:stones,exp_earned:exp,created_at:ds})}function checkAC(){var changed=false;AC.forEach(function(a){if(G.achievements[a.id])return;var ok=false;switch(a.id){case"first":ok=G.stats.sessions>=1;break;case"ten":ok=G.stats.sessions>=10;break;case"fifty":ok=G.stats.sessions>=50;break;case"hundred":ok=G.stats.sessions>=100;break;case"hour1":ok=G.stats.minutes>=60;break;case"hour10":ok=G.stats.minutes>=600;break;case"hour100":ok=G.stats.minutes>=6000;break;case"stone100":ok=G.stats.stones>=100;break;case"stone500":ok=G.stats.stones>=500;break;case"stone2000":ok=G.stats.stones>=2000;break;case"r1":ok=G.realm.stage>=1;break;case"r2":ok=G.realm.stage>=2;break;case"r3":ok=G.realm.stage>=3;break;case"r4":ok=G.realm.stage>=4;break;case"sg10":ok=G.sg.sgCompleted>=10;break;case"pill10":ok=(G.stats.pillsUsed||0)>=10;break;case"streak7":ok=G.sg.streakDays>=7;break;case"array":ok=G.upgrades.spiritArray;break}if(ok){G.achievements[a.id]=true;G.realm.exp+=a.exp;changed=true;toast("🏆 解锁成就："+a.name+" (+"+a.exp+"经验)")}});if(changed)syncProfile()}
-function showBT(realm){$("btIcon").textContent=realm.icon;$("btTitle").textContent="突破！"+realm.name;$("btDesc").textContent=realm.title;$("btOverlay").classList.add("sh");sndT()}async function loadFriends(){if(!user)return;var{data}=await SB.from("friendships").select("*,friend:friend_id(username,realm_stage,spirit_stones)").eq("user_id",user.id).eq("status","accepted");var list=$("frList");if(!data||data.length===0){list.innerHTML="<div class=\"lem\">还没有好友，快去搜索添加吧</div>";return}var h="";data.forEach(function(f){var fr=f.friend;h+="<div class=\"frItem\"><div><div class=\"frName\">"+fr.username+"</div><div class=\"frInfo\">"+RL[fr.realm_stage||0].name+" · "+fr.spirit_stones+" 灵石</div></div></div>"});list.innerHTML=h}async function searchFriend(){var name=$("frSearchInput").value.trim();if(!name){toast("请输入道号");return}if(name===profile.username){toast("不能添加自己");return}var{data}=await SB.from("profiles").select("*").eq("username",name).single();if(!data){toast("未找到该道友");return}var{error}=await SB.from("friendships").insert({user_id:user.id,friend_id:data.id,status:"accepted"});if(error){toast("添加失败，可能已是好友");return}toast("已添加好友："+name);loadFriends()}async function loadLeaderboard(){var{data}=await SB.from("profiles").select("username,realm_stage,spirit_stones").order("spirit_stones",{ascending:false}).limit(50);var tb=$("lbBody");if(!data||data.length===0){tb.innerHTML="<tr><td class=\"lem\" colspan=\"4\">暂无数据</td></tr>";return}var h="";data.forEach(function(p,i){var isMe=profile&&p.username===profile.username;h+="<tr class=\""+(isMe?"me":"")+"\"><td class=\"rank\">"+(i+1)+"</td><td>"+p.username+"</td><td>"+RL[p.realm_stage||0].name+"</td><td>"+p.spirit_stones+" 灵石</td></tr>"});tb.innerHTML=h}
-function renderPS(){var list=$("psList");if(!G.presets||G.presets.length===0){list.innerHTML="<div class=\"psEmpty\">还没有保存的项目</div>";return}var h="";G.presets.forEach(function(pr,i){h+="<div class=\"psItem\" onclick=\"usePS("+i+")\"><div><div class=\"psName\">"+pr.name+"</div><div class=\"psTime\">专注 "+pr.time+" 分钟</div></div><button class=\"psDel\" onclick=\"event.stopPropagation();delPS("+i+")\">×</button></div>"});list.innerHTML=h}function usePS(i){G.projectName=G.presets[i].name;G.settings.focusTime=G.presets[i].time;$("projectName").value=G.projectName;if(state==="idle"){sec=G.settings.focusTime*60;total=sec;uT()}$("setFocus").value=G.settings.focusTime;toast("已选择："+G.projectName);$("psOverlay").classList.remove("sh")}function delPS(i){G.presets.splice(i,1);renderPS()}function savePS(){var name=($("projectName").value||"修炼").trim();if(!name){toast("请输入项目名称");return}var exists=G.presets.findIndex(function(p){return p.name===name});if(exists>=0){G.presets[exists].time=G.settings.focusTime}else{G.presets.push({name:name,time:G.settings.focusTime});if(G.presets.length>10)G.presets.shift()}renderPS();toast("已保存："+name)}
-document.querySelectorAll(".tab").forEach(function(t){t.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("ac")});t.classList.add("ac");var tg=t.dataset.tab;document.querySelectorAll(".tc").forEach(function(x){x.classList.remove("ac")});if(tg==="cultivation")$("tabCultivation").classList.add("ac");else if(tg==="log")$("tabLog").classList.add("ac");else if(tg==="friends"){$("tabFriends").classList.add("ac");if(user)loadFriends()}else if(tg==="leaderboard"){$("tabLeaderboard").classList.add("ac");loadLeaderboard()}})});$("btnStart").addEventListener("click",function(){if(state==="idle"){sndS();sT("focusing")}else if(state==="focusing"||state==="breaking"){if(G.sg.active){toast("闭关中无法暂停");return}clearInterval(timer);this.dataset.prev=state;state="paused";uT()}else if(state==="paused"){sndS();sT(this.dataset.prev||"focusing")}});$("btnSkip").addEventListener("click",skipTimer);$("sgBtn").addEventListener("click",function(){if(G.sg.active){endSG(true)}else{startSG()}});$("sgOk").addEventListener("click",function(){$("sgOverlay").classList.remove("sh")});$("settingsBtn").addEventListener("click",function(){var p=$("settingsPanel");p.classList.toggle("sh");if(p.classList.contains("sh")){$("setFocus").value=G.settings.focusTime;$("setBreak").value=G.settings.breakTime;$("setSgQuota").value=G.settings.sgQuota;$("setSgPenalty").value=G.sg.penalty}});$("saveSettings").addEventListener("click",function(){G.settings.focusTime=Math.max(1,Math.min(120,parseInt($("setFocus").value)||25));G.settings.breakTime=Math.max(1,Math.min(60,parseInt($("setBreak").value)||5));G.settings.sgQuota=Math.max(0,Math.min(5,parseInt($("setSgQuota").value)||3));G.sg.penalty=parseInt($("setSgPenalty").value);$("settingsPanel").classList.remove("sh");if(state==="idle"){sec=G.settings.focusTime*60;total=sec;uT()}toast("设置已保存")});$("shopClose").addEventListener("click",function(){$("shopOverlay").classList.remove("sh")});$("shopOverlay").addEventListener("click",function(e){if(e.target===this)$("shopOverlay").classList.remove("sh")});$("psBtn").addEventListener("click",function(){renderPS();$("psOverlay").classList.add("sh")});$("psClose").addEventListener("click",function(){$("psOverlay").classList.remove("sh")});$("psOverlay").addEventListener("click",function(e){if(e.target===this)$("psOverlay").classList.remove("sh")});$("psSaveBtn").addEventListener("click",savePS);$("imBack").addEventListener("click",function(){if(G.sg.active){endSG(true)}else{$("immersive").classList.remove("sh")}});document.addEventListener("visibilitychange",function(){if(G.sg.active&&document.hidden)endSG(true)});$("btOk").addEventListener("click",function(){$("btOverlay").classList.remove("sh")});$("frSearchBtn").addEventListener("click",searchFriend);$("projectName").addEventListener("input",function(){G.projectName=this.value});$("realmHelp").addEventListener("click",function(){for(var i=0;i<5;i++)$("rHelp"+i).classList.remove("cur");$("rHelp"+G.realm.stage).classList.add("cur");$("rHelpOverlay").classList.add("sh")});$("rHelpClose").addEventListener("click",function(){$("rHelpOverlay").classList.remove("sh")});$("rHelpOverlay").addEventListener("click",function(e){if(e.target===this)$("rHelpOverlay").classList.remove("sh")});</script></body></html>
+.userBar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.uname{color:#c9a44b;font-size:14px}
+.logout{font-size:12px;color:#6b5b8a;cursor:pointer}
+.logout:hover{color:#e05a5a}
+.sb{position:absolute;top:12px;right:16px;background:none;border:none;color:#6b5b8a;font-size:18px;cursor:pointer;z-index:5}
+.sb:hover{color:#c9a44b}
+.spn{display:none;background:#141028;border:1px solid #2a1a3e;border-radius:12px;padding:16px;margin-bottom:14px}
+.spn.sh{display:block}
+.spn h4{color:#c9a44b;margin-bottom:10px;letter-spacing:2px;font-size:14px}
+.spn label{display:block;font-size:13px;color:#6b5b8a;margin:8px 0}
+.spn input,.spn select{width:100%;padding:8px;margin-top:4px;background:#0a0a1a;border:1px solid #2a1a3e;border-radius:6px;color:#d4c5a0;font-size:13px}
+.realm{text-align:center;margin-bottom:6px}
+.rb{display:inline-block;background:linear-gradient(135deg,#2d1f0e,#5a3d1c);border:2px solid #c9a44b;border-radius:8px;padding:5px 20px;font-size:14px;letter-spacing:3px;font-family:KaiTi,SimSun,serif;color:#f0d878}
+.rh{display:inline-block;margin-left:4px;width:18px;height:18px;border-radius:50%;border:1px solid #c9a44b;color:#c9a44b;font-size:11px;line-height:18px;text-align:center;cursor:pointer;vertical-align:middle}
+.rh:hover{background:#c9a44b;color:#0a0a1a}
+.rt{font-size:11px;color:#a78bfa;margin-top:4px;letter-spacing:2px;font-family:KaiTi,SimSun,serif;opacity:.8}
+.bw{margin:14px 0}
+.bl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.bl span:first-child{color:#6b5b8a}
+.bl span:last-child{color:#c9a44b}
+.ba{height:6px;background:#1a1030;border-radius:3px;overflow:hidden}
+.bf{height:100%;width:0%;background:linear-gradient(90deg,#4a90d9,#a78bfa);border-radius:3px;box-shadow:0 0 8px rgba(167,139,250,.5);transition:width .6s}
+.tw{display:flex;justify-content:center;margin:20px 0}
+.tr{width:190px;height:190px;border-radius:50%;position:relative;background:conic-gradient(#c9a44b 0%,#0a0a1a 0%);box-shadow:0 0 30px rgba(201,164,75,.25);border:2px solid #3a2a1e}
+.ti{position:absolute;inset:20px;border-radius:50%;background:#0a0a1a;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tt{font-size:36px;color:#f0d878;font-family:monospace;letter-spacing:2px}
+.tl{font-size:12px;color:#6b5b8a;margin-top:4px;letter-spacing:2px}
+.ct{display:flex;gap:10px;margin-bottom:14px}
+.ct .btn{flex:1;font-size:14px;padding:10px}
+.bs{background:#3a1a2e;color:#d4a0a0}
+.bs:hover{background:#5a2a3e}
+.sgBtn{background:#2a1a3e;color:#a78bfa;border:1px solid #a78bfa;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:13px}
+.sgBtn:hover{background:#3a2a4e}
+.sgInfo{text-align:center;font-size:11px;color:#6b5b8a;margin-bottom:12px}
+.st{display:flex;justify-content:space-around;margin-bottom:16px}
+.si{text-align:center}
+.sv{font-size:22px;color:#c9a44b}
+.sl{font-size:11px;color:#6b5b8a}
+.tb{display:flex;border-bottom:1px solid #2a1a3e;margin-bottom:14px}
+.tab{flex:1;text-align:center;padding:8px;font-size:13px;cursor:pointer;color:#6b5b8a;border-bottom:2px solid transparent;transition:.3s}
+.tab.ac{color:#c9a44b;border-bottom-color:#c9a44b}
+.tc{display:none}
+.tc.ac{display:block}
+.pnWrap{display:flex;gap:10px;margin:10px 0}
+.pnInput{flex:1;padding:8px 12px;background:#0a0a1a;border:1px solid #2a1a3e;border-radius:8px;color:#d4c5a0;font-size:13px}
+.pnInput:focus{outline:none;border-color:#c9a44b}
+.pnBtn{background:#1a1a3e;color:#a78bfa;border:1px solid #2a1a3e;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
+.pnBtn:hover{background:#2a2a4e}
+.ps{background:transparent;margin-bottom:14px}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ph h3{color:#c9a44b;font-size:14px;letter-spacing:2px}
+.sn{cursor:pointer;font-size:13px;color:#c9a44b;border-bottom:1px dashed #c9a44b}
+.sn:hover{color:#f0d878}
+.pl{display:flex;gap:10px;flex-wrap:wrap}
+.pill{width:calc(33.33% - 7px);background:#141028;border:1px solid #2a1a3e;border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:.3s}
+.pill:hover{border-color:#c9a44b;background:#1a1a3e}
+.pic{font-size:28px;margin-bottom:4px}
+.pnm{font-size:12px;color:#d4c5a0}
+.pds{font-size:10px;color:#6b5b8a;margin-top:2px}
+.pct{font-size:11px;color:#c9a44b;margin-top:4px}
+.ls{display:flex;justify-content:space-around;margin-bottom:14px}
+.lsi{text-align:center}
+.lsi span{display:block;font-size:11px;color:#6b5b8a}
+.lsi strong{font-size:20px;color:#c9a44b}
+.ll{max-height:200px;overflow-y:auto}
+.lem{text-align:center;color:#6b5b8a;padding:20px;font-size:13px}
+.logItem{font-size:12px;padding:8px;border-bottom:1px solid #1a1a3e;color:#6b5b8a}
+.logItem .lt{color:#d4c5a0}
+.logItem .lv{color:#c9a44b;float:right}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:800;display:none;align-items:center;justify-content:center}
+.overlay.sh{display:flex}
+.opanel{background:linear-gradient(180deg,#141028,#0d0d24);border:1px solid #2a1a3e;border-radius:16px;padding:24px;width:90%;max-width:380px;max-height:80vh;overflow-y:auto;position:relative}
+.oclose{position:absolute;top:10px;right:14px;background:none;border:none;color:#6b5b8a;font-size:22px;cursor:pointer}
+.oclose:hover{color:#e05a5a}
+.opanel h3{color:#c9a44b;letter-spacing:4px;margin-bottom:16px;font-size:16px}
+.sgItem{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #1a1a3e;gap:10px}
+.sgItem .sgn{color:#d4c5a0;font-size:13px}
+.sgItem .sgd{color:#6b5b8a;font-size:11px}
+.sgItem button{padding:6px 14px;background:#c9a44b;color:#0a0a1a;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold}
+.sgItem button:disabled{background:#3a3a4e;color:#6b5b8a;cursor:not-allowed}
+.sgItem.ow{opacity:.5}
+.sbal{text-align:center;color:#6b5b8a;font-size:13px;margin-bottom:14px}
+.frSearch{display:flex;gap:8px;margin-bottom:14px}
+.frSearch input{flex:1;padding:8px 12px;background:#0a0a1a;border:1px solid #2a1a3e;border-radius:8px;color:#d4c5a0;font-size:13px}
+.frList{max-height:300px;overflow-y:auto}
+.friendItem{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #1a1a3e}
+.friendItem .fn{color:#d4c5a0;font-size:13px}
+.friendItem .fr{color:#c9a44b;font-size:11px}
+.friendItem button{padding:4px 12px;background:transparent;color:#e05a5a;border:1px solid #e05a5a;border-radius:6px;cursor:pointer;font-size:11px}
+.lbTable{width:100%;border-collapse:collapse;font-size:12px}
+.lbTable th{color:#c9a44b;padding:8px;border-bottom:1px solid #2a1a3e;text-align:left}
+.lbTable td{padding:8px;border-bottom:1px solid #1a1a3e}
+.lbTable tr.me{background:rgba(201,164,75,.08)}
+.lbTable .rank{color:#c9a44b;font-weight:bold;width:40px}
+.immersive{position:fixed;inset:0;z-index:950;background:#0a0a1a;display:none;flex-direction:column;align-items:center;justify-content:center}
+.immersive.sh{display:flex}
+.sgWarn{position:absolute;top:16px;color:#e05a5a;font-size:12px;letter-spacing:2px;display:none}
+.sgOverlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:960;display:none;align-items:center;justify-content:center}
+.sgOverlay.sh{display:flex}
+.sgBox{background:#141028;border:2px solid #e05a5a;border-radius:16px;padding:24px;text-align:center;width:90%;max-width:320px}
+.sgBox h3{color:#e05a5a;margin-bottom:10px}
+.sgBox p{font-size:13px;color:#6b5b8a;margin-bottom:16px;line-height:1.8}
+.obtn{padding:8px 24px;background:#e05a5a;color:#fff;border:none;border-radius:8px;cursor:pointer}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#141028;border:1px solid #c9a44b;border-radius:10px;padding:10px 20px;z-index:999;font-size:13px;color:#c9a44b;pointer-events:none;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.rHelpOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:920;display:none;align-items:center;justify-content:center}
+.rHelpOverlay.sh{display:flex}
+.rHelpBox{background:linear-gradient(180deg,#141028,#0d0d24);border:1px solid #c9a44b;border-radius:16px;padding:24px;width:90%;max-width:380px;max-height:80vh;overflow-y:auto}
+.rHelpBox h3{color:#c9a44b;margin-bottom:14px;letter-spacing:4px}
+.rHelpRow{padding:10px 0;border-bottom:1px solid #1a1a3e;font-size:13px}
+.rHelpRow.cur{color:#c9a44b;font-weight:bold}
+.rHelpRow .rn{display:inline-block;min-width:80px}
+.rHelpRow .re{color:#6b5b8a;font-size:11px}
+.psItem{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #1a1a3e;cursor:pointer}
+.psItem:hover{background:#1a1a3e}
+.psName{color:#d4c5a0;font-size:13px}
+.psTime{color:#6b5b8a;font-size:11px}
+.psDel{background:none;border:none;color:#6b5b8a;font-size:16px;cursor:pointer}
+.psDel:hover{color:#e05a5a}
+.psEmpty{text-align:center;color:#6b5b8a;padding:20px}
+.psSave{width:100%;margin-top:12px;padding:10px;background:#2a1a3e;color:#a78bfa;border:1px solid #a78bfa;border-radius:8px;cursor:pointer;font-size:12px}
+</style>
+</head>
+<body>
+<div class="intro" id="intro">
+<div class="orb"></div>
+<div class="it">仙 侠 番 茄 钟</div>
+<div class="isb">静心修炼 · 道法自然</div>
+<button class="ib" id="introBtn">悟 道</button>
+</div>
+
+<div class="authOverlay" id="authOverlay">
+<div class="authBox">
+<h3 id="authTitle">登 录</h3>
+<input type="email" id="authEmail" placeholder="邮箱">
+<input type="password" id="authPassword" placeholder="密码">
+<input type="text" id="authUsername" placeholder="修炼道号" style="display:none">
+<button class="btn" id="authSubmit">登录</button>
+<div class="alt" id="authSwitch">还没有账号？去注册</div>
+</div>
+</div>
+
+<div class="app" id="mainApp">
+<div class="userBar"><span class="uname" id="userName"></span><span class="logout" id="logoutBtn">退出登录</span></div>
+<button class="sb" id="settingsBtn">&#9881;</button>
+
+<div class="spn" id="settingsPanel">
+<h4>修炼设置</h4>
+<label>专注时长(分) <input type="number" id="setFocus" min="1" max="120" value="25"></label>
+<label>休息时长(分) <input type="number" id="setBreak" min="1" max="60" value="5"></label>
+<label>每日破关次数 <input type="number" id="setSgQuota" min="0" max="5" value="3"></label>
+<label>破关惩罚(扣除灵石) <select id="setSgPenalty"><option value="0">不扣除灵石</option><option value="30">扣除30%灵石</option><option value="50" selected>扣除一半灵石</option><option value="70">扣除70%灵石</option><option value="100">扣除全部灵石</option></select></label>
+<button class="btn" id="saveSettings" style="margin-top:8px;font-size:13px">保存</button>
+</div>
+
+<div class="realm">
+<div class="rb" id="realmBadge">练气期</div>
+<span class="rh" id="realmHelp">?</span>
+<div class="rt" id="realmTitle">初入仙途</div>
+</div>
+
+<div class="bw">
+<div class="bl"><span>灵力</span><span id="expLabel">0 / 100</span></div>
+<div class="ba"><div class="bf" id="spiritFill"></div></div>
+</div>
+
+<div class="pnWrap">
+<input class="pnInput" id="projectName" placeholder="输入修炼项目名称" maxlength="20">
+<button class="pnBtn" id="psBtn">常修</button>
+</div>
+
+<div class="tw">
+<div class="tr" id="timerRing">
+<div class="ti"><div class="tt" id="timerTime">25:00</div><div class="tl" id="timerLabel">准备修炼</div></div>
+</div>
+</div>
+
+<div class="ct">
+<button class="btn" id="btnStart">开始修炼</button>
+<button class="sgBtn" id="sgBtn">闭关</button>
+<button class="btn bs" id="btnSkip" style="display:none">提前结束</button>
+</div>
+<div class="sgInfo">今日破关：<span id="sgQuota">0</span> / <span id="sgMax">3</span></div>
+
+<div class="st">
+<div class="si"><div class="sv" id="statSessions">0</div><div class="sl">修炼次数</div></div>
+<div class="si"><div class="sv" id="statMinutes">0</div><div class="sl">修炼时长(分)</div></div>
+<div class="si"><div class="sv" id="statStones">0</div><div class="sl">灵石</div></div>
+</div>
+
+<div class="tb">
+<div class="tab ac" data-tab="cultivation">修炼</div>
+<div class="tab" data-tab="log">日志</div>
+<div class="tab" data-tab="friends">好友</div>
+<div class="tab" data-tab="leaderboard">排行</div>
+</div>
+
+<div class="tc ac" id="tabCultivation">
+<div class="ps">
+<div class="ph"><h3>丹药</h3><span class="sn" id="stonesDisplay">0 灵石</span></div>
+<div class="pl">
+<div class="pill" onclick="usePill('focus')" id="pillFocus"><div class="pic">&#128138;</div><div class="pnm">专注丹</div><div class="pds">灵石+50%</div><div class="pct">x<span id="pillFocusCount">1</span></div></div>
+<div class="pill" onclick="usePill('double')" id="pillDouble"><div class="pic">&#128142;</div><div class="pnm">双倍丹</div><div class="pds">经验翻倍</div><div class="pct">x<span id="pillDoubleCount">0</span></div></div>
+<div class="pill" onclick="usePill('extend')" id="pillExtend"><div class="pic">&#9203;</div><div class="pnm">延时沙漏</div><div class="pds">专注+10分钟</div><div class="pct">x<span id="pillExtendCount">0</span></div></div>
+</div>
+</div>
+</div>
+
+<div class="tc" id="tabLog">
+<div class="ls">
+<div class="lsi"><span>今日修炼</span><strong id="logToday">0</strong></div>
+<div class="lsi"><span>今日灵石</span><strong id="logTodayStones">0</strong></div>
+<div class="lsi"><span>累计修炼</span><strong id="logTotal">0</strong></div>
+</div>
+<div class="ll" id="logList"><div class="lem">尚未开始修炼</div></div>
+</div>
+
+<div class="tc" id="tabFriends">
+<div class="frSearch"><input type="text" id="frSearchInput" placeholder="搜索道友道号"><button class="btn" id="frSearchBtn" style="width:auto;padding:8px 14px;font-size:12px">搜索</button></div>
+<div class="frList" id="frList"><div class="lem">加载中...</div></div>
+</div>
+
+<div class="tc" id="tabLeaderboard">
+<table class="lbTable"><thead><tr><th>排名</th><th>道号</th><th>境界</th><th>灵石</th></tr></thead><tbody id="lbBody"><tr><td class="lem" colspan="4">加载中...</td></tr></tbody></table>
+</div>
+</div>
+
+<div class="overlay" id="shopOverlay">
+<div class="opanel">
+<button class="oclose" id="shopClose">&times;</button>
+<h3>仙 盟 商 城</h3>
+<div class="sbal">当前灵石：<span id="shopBalance" style="color:#c9a44b">0</span></div>
+<div id="shopItems"></div>
+</div>
+</div>
+
+<div class="overlay" id="psOverlay">
+<div class="opanel">
+<button class="oclose" id="psClose">&times;</button>
+<h3>常 修</h3>
+<div id="psList"><div class="psEmpty">还没有保存的项目</div></div>
+<button class="psSave" id="psSaveBtn">保存当前项目</button>
+</div>
+</div>
+
+<div class="sgOverlay" id="sgOverlay">
+<div class="sgBox">
+<h3>&#9888; 破关</h3>
+<p>你离开了闭关界面！<br>本次扣除灵石：<span id="sgPenaltyText" style="color:#e05a5a">0</span><br>剩余破关次数：<span id="sgLeft" style="color:#c9a44b">3</span></p>
+<button class="obtn" id="sgOk">知道了</button>
+</div>
+</div>
+
+<div class="rHelpOverlay" id="rHelpOverlay">
+<div class="rHelpBox">
+<button class="oclose" id="rHelpClose" style="position:sticky;float:right">&times;</button>
+<h3>修炼境界说明</h3>
+<p style="font-size:12px;color:#6b5b8a;margin-bottom:12px">灵力通过修炼获得，满后自动突破</p>
+<div id="rHelpContent"></div>
+</div>
+</div>
+
+<div class="immersive" id="immersive">
+<div class="sgWarn" id="sgWarn">&#9888; 闭关中 · 离开将受惩罚</div>
+<div class="tr" id="imRing" style="width:220px;height:220px">
+<div class="ti"><div class="tt" id="imTime" style="font-size:42px">25:00</div><div class="tl">闭关修炼</div></div>
+</div>
+<button class="ib" id="imBack" style="margin-top:30px">返回</button>
+</div>
+
+<script>
+var SB=null;
+try{if(typeof supabase!=="undefined"){SB=supabase.createClient("https://wlodirkqpbeovblpmpco.supabase.co","sb_publishable_cCf7ejwzDc9E-FeP7LGeeQ_LSs1jPJR")}}catch(e){console.error(e)}
+var user=null,profile=null;
+
+function $(id){return document.getElementById(id)}
+function toast(msg){var t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},2500)}
+
+var ACtx=null;
+function gac(){if(!ACtx)ACtx=new(window.AudioContext||window.webkitAudioContext)();return ACtx}
+function pn(f,s,d,v,t){try{var c=gac(),o=c.createOscillator(),g=c.createGain();o.type=t||"triangle";o.frequency.value=f;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(0.001,s+d);o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d)}catch(e){}}
+function sndI(){var c=gac(),t=c.currentTime;[261.63,329.63,392,523.25].forEach(function(f,i){pn(f,t+i*0.2,0.8,0.08,"sine")})}
+function sndS(){var c=gac(),t=c.currentTime;pn(196,t,1.2,0.06,"sine");pn(261.63,t+0.15,1,0.05,"sine")}
+function sndB(){var c=gac(),t=c.currentTime;pn(523.25,t,0.6,0.08,"sine");pn(659.25,t+0.15,0.6,0.08,"sine")}
+function sndT(){var c=gac(),t=c.currentTime;[392,523.25,659.25,783.99,1046.5].forEach(function(f,i){pn(f,t+i*0.1,0.5,0.12,"triangle")})}
+function sndBuy(){var c=gac(),t=c.currentTime;pn(880,t,0.3,0.1,"sine");pn(1046.5,t+0.1,0.3,0.1,"sine")}
+
+var RL=[{name:"练气期",title:"初入仙途",exp:100,icon:"🌱"},{name:"筑基期",title:"道基初成",exp:300,icon:"🏛"},{name:"金丹期",title:"金丹大成",exp:600,icon:"💛"},{name:"元婴期",title:"元婴出世",exp:1200,icon:"✨"},{name:"化神期",title:"化神登仙",exp:2500,icon:"👑"}];
+var SP=[{id:"focus",name:"专注丹",desc:"下轮修炼灵石收益+50%",price:30},{id:"double",name:"双倍丹",desc:"下轮修炼经验翻倍",price:50},{id:"extend",name:"延时沙漏",desc:"专注时长+10分钟",price:40},{id:"tribulation",name:"渡劫符",desc:"一次中途放弃修炼不扣灵石",price:80},{id:"array",name:"聚灵阵",desc:"永久：每次修炼额外+2灵石",price:200}];
+var AC=[{id:"first",name:"初窥门径",desc:"完成第1次修炼",icon:"🔰",exp:10},{id:"ten",name:"勤修不辍",desc:"累计完成10次修炼",icon:"📿",exp:30},{id:"fifty",name:"道心坚定",desc:"累计完成50次修炼",icon:"🎯",exp:60},{id:"hundred",name:"道心通明",desc:"累计完成100次修炼",icon:"🔮",exp:100},{id:"hour1",name:"一日之修",desc:"累计修炼1小时",icon:"⏳",exp:15},{id:"hour10",name:"十日之功",desc:"累计修炼10小时",icon:"⌛",exp:40},{id:"hour100",name:"百日筑基",desc:"累计修炼100小时",icon:"🕰",exp:80},{id:"stone100",name:"小有积蓄",desc:"累计获得100灵石",icon:"🪙",exp:20},{id:"stone500",name:"富甲一方",desc:"累计获得500灵石",icon:"💰",exp:50},{id:"stone2000",name:"灵石如山",desc:"累计获得2000灵石",icon:"💎",exp:100},{id:"r1",name:"筑基有成",desc:"突破至筑基期",icon:"🏛",exp:25},{id:"r2",name:"金丹大道",desc:"突破至金丹期",icon:"💛",exp:50},{id:"r3",name:"元婴出世",desc:"突破至元婴期",icon:"✨",exp:80},{id:"r4",name:"化神登仙",desc:"突破至化神期",icon:"👑",exp:120},{id:"sg10",name:"闭关达人",desc:"累计闭关完成10次",icon:"🧘",exp:50},{id:"pill10",name:"丹道初窥",desc:"累计使用10颗丹药",icon:"🧪",exp:30},{id:"streak7",name:"连续七日",desc:"连续7天修炼",icon:"📅",exp:60},{id:"nobreak",name:"零破关",desc:"一整天闭关零破关",icon:"🛡",exp:40},{id:"array",name:"聚灵之主",desc:"购买聚灵阵",icon:"🌐",exp:50}];
+
+var G={realm:{stage:0,exp:0},stats:{sessions:0,minutes:0,stones:0,pillsUsed:0,totalStones:0},pills:{focus:1,double:0,extend:0,tribulation:0},upgrades:{spiritArray:false},achievements:{},settings:{focusTime:25,breakTime:5,sgQuota:3},ap:{focus:false,double:false,extend:false,tribulation:false},projectName:"修炼",presets:[],logEntries:[],sg:{active:false,exitsToday:0,penalty:50,streakDays:0,sgCompleted:0,noBreakToday:true,lastDate:""}};
+var state="idle",sec=G.settings.focusTime*60,total=sec,timer=null;
+
+function saveG(){try{var d={realm:G.realm,stats:G.stats,pills:G.pills,upgrades:G.upgrades,achievements:G.achievements,settings:G.settings,presets:G.presets,logEntries:G.logEntries.slice(-100),sg:{exitsToday:G.sg.exitsToday,penalty:G.sg.penalty,streakDays:G.sg.streakDays,sgCompleted:G.sg.sgCompleted,noBreakToday:G.sg.noBreakToday,lastDate:G.sg.lastDate,active:false}};localStorage.setItem("xianxia_state",JSON.stringify(d))}catch(e){}}
+function loadG(){try{var d=JSON.parse(localStorage.getItem("xianxia_state"));if(d){G.realm=d.realm||G.realm;G.stats=d.stats||G.stats;G.pills=d.pills||G.pills;G.upgrades=d.upgrades||G.upgrades;G.achievements=d.achievements||G.achievements;G.settings=d.settings||G.settings;G.presets=d.presets||G.presets;G.logEntries=d.logEntries||G.logEntries;G.sg.exitsToday=d.sg.exitsToday||0;G.sg.penalty=d.sg.penalty||50;G.sg.streakDays=d.sg.streakDays||0;G.sg.sgCompleted=d.sg.sgCompleted||0;G.sg.noBreakToday=d.sg.noBreakToday!==false;G.sg.lastDate=d.sg.lastDate||""}}catch(e){}}
+
+<script>
+var SB=null;
+try{if(typeof supabase!=="undefined"){SB=supabase.createClient("https://wlodirkqpbeovblpmpco.supabase.co","sb_publishable_cCf7ejwzDc9E-FeP7LGeeQ_LSs1jPJR")}}catch(e){console.error(e)}
+var user=null,profile=null;
+
+function $(id){return document.getElementById(id)}
+function toast(msg){var t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},2500)}
+
+var ACtx=null;
+function gac(){if(!ACtx)ACtx=new(window.AudioContext||window.webkitAudioContext)();return ACtx}
+function pn(f,s,d,v,t){try{var c=gac(),o=c.createOscillator(),g=c.createGain();o.type=t||"triangle";o.frequency.value=f;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(0.001,s+d);o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d)}catch(e){}}
+function sndI(){var c=gac(),t=c.currentTime;[261.63,329.63,392,523.25].forEach(function(f,i){pn(f,t+i*0.2,0.8,0.08,"sine")})}
+function sndS(){var c=gac(),t=c.currentTime;pn(196,t,1.2,0.06,"sine");pn(261.63,t+0.15,1,0.05,"sine")}
+function sndB(){var c=gac(),t=c.currentTime;pn(523.25,t,0.6,0.08,"sine");pn(659.25,t+0.15,0.6,0.08,"sine")}
+function sndT(){var c=gac(),t=c.currentTime;[392,523.25,659.25,783.99,1046.5].forEach(function(f,i){pn(f,t+i*0.1,0.5,0.12,"triangle")})}
+function sndBuy(){var c=gac(),t=c.currentTime;pn(880,t,0.3,0.1,"sine");pn(1046.5,t+0.1,0.3,0.1,"sine")}
+
+var RL=[{name:"练气期",title:"初入仙途",exp:100,icon:"🌱"},{name:"筑基期",title:"道基初成",exp:300,icon:"🏛"},{name:"金丹期",title:"金丹大成",exp:600,icon:"💛"},{name:"元婴期",title:"元婴出世",exp:1200,icon:"✨"},{name:"化神期",title:"化神登仙",exp:2500,icon:"👑"}];
+var SP=[{id:"focus",name:"专注丹",desc:"下轮修炼灵石收益+50%",price:30},{id:"double",name:"双倍丹",desc:"下轮修炼经验翻倍",price:50},{id:"extend",name:"延时沙漏",desc:"专注时长+10分钟",price:40},{id:"tribulation",name:"渡劫符",desc:"一次中途放弃修炼不扣灵石",price:80},{id:"array",name:"聚灵阵",desc:"永久：每次修炼额外+2灵石",price:200}];
+var AC=[{id:"first",name:"初窥门径",desc:"完成第1次修炼",icon:"🔰",exp:10},{id:"ten",name:"勤修不辍",desc:"累计完成10次修炼",icon:"📿",exp:30},{id:"fifty",name:"道心坚定",desc:"累计完成50次修炼",icon:"🎯",exp:60},{id:"hundred",name:"道心通明",desc:"累计完成100次修炼",icon:"🔮",exp:100},{id:"hour1",name:"一日之修",desc:"累计修炼1小时",icon:"⏳",exp:15},{id:"hour10",name:"十日之功",desc:"累计修炼10小时",icon:"⌛",exp:40},{id:"hour100",name:"百日筑基",desc:"累计修炼100小时",icon:"🕰",exp:80},{id:"stone100",name:"小有积蓄",desc:"累计获得100灵石",icon:"🪙",exp:20},{id:"stone500",name:"富甲一方",desc:"累计获得500灵石",icon:"💰",exp:50},{id:"stone2000",name:"灵石如山",desc:"累计获得2000灵石",icon:"💎",exp:100},{id:"r1",name:"筑基有成",desc:"突破至筑基期",icon:"🏛",exp:25},{id:"r2",name:"金丹大道",desc:"突破至金丹期",icon:"💛",exp:50},{id:"r3",name:"元婴出世",desc:"突破至元婴期",icon:"✨",exp:80},{id:"r4",name:"化神登仙",desc:"突破至化神期",icon:"👑",exp:120},{id:"sg10",name:"闭关达人",desc:"累计闭关完成10次",icon:"🧘",exp:50},{id:"pill10",name:"丹道初窥",desc:"累计使用10颗丹药",icon:"🧪",exp:30},{id:"streak7",name:"连续七日",desc:"连续7天修炼",icon:"📅",exp:60},{id:"nobreak",name:"零破关",desc:"一整天闭关零破关",icon:"🛡",exp:40},{id:"array",name:"聚灵之主",desc:"购买聚灵阵",icon:"🌐",exp:50}];
+
+var G={realm:{stage:0,exp:0},stats:{sessions:0,minutes:0,stones:0,pillsUsed:0,totalStones:0},pills:{focus:1,double:0,extend:0,tribulation:0},upgrades:{spiritArray:false},achievements:{},settings:{focusTime:25,breakTime:5,sgQuota:3},ap:{focus:false,double:false,extend:false,tribulation:false},projectName:"修炼",presets:[],logEntries:[],sg:{active:false,exitsToday:0,penalty:50,streakDays:0,sgCompleted:0,noBreakToday:true,lastDate:""}};
+var state="idle",sec=G.settings.focusTime*60,total=sec,timer=null;
+
+function saveG(){try{var d={realm:G.realm,stats:G.stats,pills:G.pills,upgrades:G.upgrades,achievements:G.achievements,settings:G.settings,presets:G.presets,logEntries:G.logEntries.slice(-100),sg:{exitsToday:G.sg.exitsToday,penalty:G.sg.penalty,streakDays:G.sg.streakDays,sgCompleted:G.sg.sgCompleted,noBreakToday:G.sg.noBreakToday,lastDate:G.sg.lastDate,active:false}};localStorage.setItem("xianxia_state",JSON.stringify(d))}catch(e){}}
+function loadG(){try{var d=JSON.parse(localStorage.getItem("xianxia_state"));if(d){G.realm=d.realm||G.realm;G.stats=d.stats||G.stats;G.pills=d.pills||G.pills;G.upgrades=d.upgrades||G.upgrades;G.achievements=d.achievements||G.achievements;G.settings=d.settings||G.settings;G.presets=d.presets||G.presets;G.logEntries=d.logEntries||G.logEntries;G.sg.exitsToday=d.sg.exitsToday||0;G.sg.penalty=d.sg.penalty||50;G.sg.streakDays=d.sg.streakDays||0;G.sg.sgCompleted=d.sg.sgCompleted||0;G.sg.noBreakToday=d.sg.noBreakToday!==false;G.sg.lastDate=d.sg.lastDate||""}}catch(e){}}
+
+function uR(){
+  var r=RL[G.realm.stage];
+  $("realmBadge").textContent=r.name;
+  $("realmTitle").textContent=r.title;
+  $("expLabel").textContent=G.realm.exp+" / "+r.exp;
+  var pct=Math.min(100,Math.round(G.realm.exp/r.exp*100));
+  $("spiritFill").style.width=pct+"%";
+  buildRealmHelp();
+}
+function uS(){
+  $("statSessions").textContent=G.stats.sessions;
+  $("statMinutes").textContent=G.stats.minutes;
+  $("statStones").textContent=G.stats.stones;
+  $("stonesDisplay").textContent=G.stats.stones+" 灵石";
+  $("pillFocusCount").textContent=G.pills.focus;
+  $("pillDoubleCount").textContent=G.pills.double;
+  $("pillExtendCount").textContent=G.pills.extend;
+  $("sgQuota").textContent=G.sg.exitsToday;
+  $("sgMax").textContent=G.settings.sgQuota;
+}
+function uT(){
+  var m=Math.floor(sec/60),s=sec%60;
+  var ts=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  $("timerTime").textContent=ts;$("imTime").textContent=ts;
+  var pct=(total-sec)/total*100;
+  $("timerRing").style.background="conic-gradient(#c9a44b "+pct*3.6+"deg,#0a0a1a 0deg)";
+  $("imRing").style.background="conic-gradient(#c9a44b "+pct*3.6+"deg,#0a0a1a 0deg)";
+  var labels={idle:"准备修炼",focusing:"修炼中",breaking:"休息中",paused:"已暂停"};
+  $("timerLabel").textContent=labels[state]||"";
+}
+function uP(){uR();uS();uT()}
+
+function addExp(amount){
+  G.realm.exp+=amount;
+  var r=RL[G.realm.stage];
+  while(G.realm.stage<RL.length-1&&G.realm.exp>=r.exp){
+    G.realm.exp-=r.exp;G.realm.stage++;r=RL[G.realm.stage];
+    sndT();toast("突破！晋入 "+r.name+"！");checkAC();
+  }
+}
+
+function checkAC(){
+  var changed=false;
+  AC.forEach(function(a){
+    if(G.achievements[a.id])return;
+    var ok=false;
+    switch(a.id){
+      case"first":ok=G.stats.sessions>=1;break;
+      case"ten":ok=G.stats.sessions>=10;break;
+      case"fifty":ok=G.stats.sessions>=50;break;
+      case"hundred":ok=G.stats.sessions>=100;break;
+      case"hour1":ok=G.stats.minutes>=60;break;
+      case"hour10":ok=G.stats.minutes>=600;break;
+      case"hour100":ok=G.stats.minutes>=6000;break;
+      case"stone100":ok=G.stats.totalStones>=100;break;
+      case"stone500":ok=G.stats.totalStones>=500;break;
+      case"stone2000":ok=G.stats.totalStones>=2000;break;
+      case"r1":ok=G.realm.stage>=1;break;
+      case"r2":ok=G.realm.stage>=2;break;
+      case"r3":ok=G.realm.stage>=3;break;
+      case"r4":ok=G.realm.stage>=4;break;
+      case"sg10":ok=G.sg.sgCompleted>=10;break;
+      case"pill10":ok=(G.stats.pillsUsed||0)>=10;break;
+      case"streak7":ok=G.sg.streakDays>=7;break;
+      case"nobreak":ok=G.sg.noBreakToday;break;
+      case"array":ok=G.upgrades.spiritArray;break;
+    }
+    if(ok){G.achievements[a.id]=true;changed=true;addExp(a.exp);toast("🏆 成就解锁："+a.name+" (+"+a.exp+"灵力)")}
+  });
+  if(changed)saveG();
+}
+
+function sT(mode){
+  state=mode;
+  if(state==="focusing"){total=sec;G.ap.focus=false;G.ap.double=false;G.ap.extend=false;G.ap.tribulation=false}
+  if(state==="breaking"){total=sec=G.settings.breakTime*60}
+  clearInterval(timer);
+  $("btnStart").textContent=state==="idle"?"开始修炼":(state==="paused"?"继续修炼":"暂停修炼");
+  $("btnSkip").style.display=(state==="focusing"||state==="breaking")?"":"none";
+  if(state==="idle"){$("btnSkip").style.display="none";$("btnStart").textContent="开始修炼"}
+  uT();
+  if(state==="idle"||state==="paused")return;
+  timer=setInterval(function(){
+    sec--;uT();
+    if(sec<=0){
+      clearInterval(timer);
+      if(state==="focusing"){
+        var actualMins=Math.max(1,Math.floor((G.settings.focusTime*60)/(total>0?total:1500)*G.settings.focusTime));
+        var baseStones=Math.max(1,Math.floor(actualMins/5));
+        var stoneMul=1;
+        if(G.ap.focus)stoneMul=1.5;
+        if(G.upgrades.spiritArray)baseStones+=2;
+        var stones=Math.floor(baseStones*stoneMul);
+        G.stats.stones+=stones;G.stats.totalStones+=stones;
+        G.stats.sessions++;G.stats.minutes+=actualMins;
+        var expMul=1;if(G.ap.double)expMul=2;
+        var expGained=Math.max(1,Math.floor(actualMins/5*expMul*10));
+        addExp(expGained);
+        var desc=G.projectName||"修炼";
+        G.logEntries.unshift({desc:desc,stones:stones,exp:expGained,time:new Date().toLocaleString()});
+        if(G.sg.active){G.sg.sgCompleted++;G.sg.active=false}
+        uP();saveG();checkAC();sndB();
+        toast("修炼完成！+"+stones+"灵石 +"+expGained+"灵力");
+        if(user)saveLog(desc,stones,expGained);
+        state="idle";sec=G.settings.focusTime*60;total=sec;
+        $("btnSkip").style.display="none";$("btnStart").textContent="开始修炼";
+        if($("immersive").classList.contains("sh")){$("immersive").classList.remove("sh");$("sgWarn").style.display="none"}
+        uT();
+      }else if(state==="breaking"){
+        sndB();toast("休息结束");state="idle";sec=G.settings.focusTime*60;total=sec;
+        $("btnSkip").style.display="none";$("btnStart").textContent="开始修炼";uT();
+      }
+    }
+  },1000);
+}
+
+function skipTimer(){
+  if(state!=="focusing"){clearInterval(timer);state="idle";sec=G.settings.focusTime*60;total=sec;uT();return}
+  if(G.ap.tribulation){G.ap.tribulation=false;clearInterval(timer);state="idle";sec=G.settings.focusTime*60;total=sec;uP();uT();toast("渡劫符抵消了惩罚");return}
+  if(!confirm("确定提前结束吗？"))return;
+  clearInterval(timer);G.stats.stones=Math.max(0,G.stats.stones-5);
+  state="idle";sec=G.settings.focusTime*60;total=sec;uR();uS();uP();uT();
+}
+
+function usePill(type){
+  if(G.pills[type]<=0)return;
+  if(state!=="idle"){toast("只能在修炼前使用丹药");return}
+  if(type==="tribulation"){toast("渡劫符无需使用，放弃修炼时自动生效");return}
+  if(G.ap[type])return;
+  G.pills[type]--;G.ap[type]=true;G.stats.pillsUsed=(G.stats.pillsUsed||0)+1;uP();
+  var names={focus:"专注丹",double:"双倍丹",extend:"延时沙漏"};
+  toast("使用 "+names[type]);
+}
+
+function uShop(){
+  var h="";
+  SP.forEach(function(item){
+    var owned=item.id==="array"?G.upgrades.spiritArray:false;
+    h+='<div class="sgItem'+(owned?' ow':'')+'"><div><div class="sgn">'+item.name+'</div><div class="sgd">'+item.desc+'</div></div>';
+    if(owned)h+='<button disabled>已拥有</button>';
+    else h+='<button onclick="buyItem(\''+item.id+'\')" '+(G.stats.stones<item.price?'disabled':'')+'>'+item.price+' 灵石</button>';
+    h+='</div>';
+  });
+  $("shopItems").innerHTML=h;$("shopBalance").textContent=G.stats.stones;
+}
+
+function buyItem(id){
+  var item=SP.find(function(p){return p.id===id});if(!item)return;
+  if(id==="array"){
+    if(G.upgrades.spiritArray){toast("已拥有聚灵阵");return}
+    if(G.stats.stones<item.price){toast("灵石不足");return}
+    G.stats.stones-=item.price;G.upgrades.spiritArray=true;
+  }else{
+    if(G.stats.stones<item.price){toast("灵石不足");return}
+    if(state!=="idle"){toast("只能在修炼前购买丹药");return}
+    G.stats.stones-=item.price;G.pills[id]=(G.pills[id]||0)+1;
+  }
+  sndBuy();uS();uP();uShop();saveG();checkAC();toast("获得 "+item.name);
+}
+
+function startSG(){
+  if(state!=="idle"){toast("请先完成当前修炼");return}
+  if(G.sg.exitsToday>=G.settings.sgQuota){toast("今日破关次数已用完！");return}
+  G.sg.active=true;sndS();sT("focusing");
+  $("immersive").classList.add("sh");$("imBack").style.display="none";$("sgWarn").style.display="block";
+}
+
+function endSG(forced){
+  if(!G.sg.active)return;G.sg.active=false;
+  if(forced){
+    G.sg.exitsToday++;G.sg.noBreakToday=false;
+    var lost=0;
+    if(G.sg.penalty>0){lost=Math.floor(G.stats.stones*G.sg.penalty/100);G.stats.stones=Math.max(0,G.stats.stones-lost)}
+    $("sgPenaltyText").textContent=lost;
+    if(state==="focusing"||state==="breaking"){clearInterval(timer);state="idle";sec=G.settings.focusTime*60;total=sec}
+    $("sgLeft").textContent=G.settings.sgQuota-G.sg.exitsToday;
+    $("sgOverlay").classList.add("sh");uS();
+  }
+  $("immersive").classList.remove("sh");$("imBack").style.display="";$("sgWarn").style.display="none";uT();
+}
+
+function renderPS(){
+  var list=$("psList");
+  if(!G.presets||G.presets.length===0){list.innerHTML='<div class="psEmpty">还没有保存的项目</div>';return}
+  var h="";
+  G.presets.forEach(function(pr,i){
+    h+='<div class="psItem" onclick="usePS('+i+')"><div><div class="psName">'+pr.name+'</div><div class="psTime">专注 '+pr.time+' 分钟</div></div><button class="psDel" onclick="event.stopPropagation();delPS('+i+')">&times;</button></div>';
+  });
+  list.innerHTML=h;
+}
+
+function usePS(i){G.projectName=G.presets[i].name;G.settings.focusTime=G.presets[i].time;$("projectName").value=G.projectName;if(state==="idle"){sec=G.settings.focusTime*60;total=sec;uT()}$("setFocus").value=G.settings.focusTime;toast("已选择："+G.projectName);$("psOverlay").classList.remove("sh")}
+function delPS(i){G.presets.splice(i,1);renderPS();saveG()}
+function savePS(){var name=($("projectName").value||"修炼").trim();if(!name){toast("请输入项目名称");return}var exists=G.presets.findIndex(function(p){return p.name===name});if(exists>=0){G.presets[exists].time=G.settings.focusTime}else{G.presets.push({name:name,time:G.settings.focusTime});if(G.presets.length>10)G.presets.shift()}renderPS();saveG();toast("已保存："+name)}
+
+function renderLog(){
+  var today=new Date().toDateString();var todaySessions=0,todayStones=0;
+  G.logEntries.forEach(function(e){if(new Date(e.time).toDateString()===today){todaySessions++;todayStones+=e.stones}});
+  $("logToday").textContent=todaySessions;$("logTodayStones").textContent=todayStones;$("logTotal").textContent=G.logEntries.length;
+  var list=$("logList");
+  if(G.logEntries.length===0){list.innerHTML='<div class="lem">尚未开始修炼</div>';return}
+  var h="";
+  G.logEntries.slice(0,20).forEach(function(e){h+='<div class="logItem"><span class="lt">'+e.time+' '+e.desc+'</span><span class="lv">+'+e.stones+'灵石 +'+e.exp+'灵力</span></div>'});
+  list.innerHTML=h;
+}
+
+function buildRealmHelp(){
+  var h='<p style="font-size:12px;color:#6b5b8a;margin-bottom:12px">灵力通过修炼获得，满后自动突破</p>';
+  RL.forEach(function(r,i){h+='<div class="rHelpRow'+(i===G.realm.stage?' cur':'')+'"><span class="rn">'+r.icon+' '+r.name+'</span><span class="re">需要灵力：'+r.exp+' | '+r.title+'</span></div>'});
+  $("rHelpContent").innerHTML=h;
+}
+
+async function saveLog(desc,stones,exp){if(!user)return;try{await SB.from("training_logs").insert({user_id:user.id,description:desc,stones_earned:stones,exp_earned:exp,created_at:new Date().toISOString()})}catch(e){}}
+
+async function loadProfile(){
+  if(!user)return;
+  try{
+    var{data,error}=await SB.from("profiles").select("*").eq("id",user.id).single();
+    if(data){profile=data}else{
+      await SB.from("profiles").insert({id:user.id,username:user.email.split("@")[0]});
+      var{data:d2}=await SB.from("profiles").select("*").eq("id",user.id).single();profile=d2;
+    }
+  }catch(e){profile=null}
+  if(profile){G.stats.stones=profile.spirit_stones||G.stats.stones;G.realm.stage=profile.realm_stage||0;G.realm.exp=profile.realm_exp||0;uP();saveG()}
+}
+
+async function syncProfile(){
+  if(!user||!SB)return;
+  try{await SB.from("profiles").upsert({id:user.id,username:profile?profile.username:user.email.split("@")[0],spirit_stones:G.stats.stones,realm_stage:G.realm.stage,realm_exp:G.realm.exp,total_sessions:G.stats.sessions,total_minutes:G.stats.minutes,updated_at:new Date().toISOString()})}catch(e){}
+}
+
+async function searchFriend(){
+  var q=$("frSearchInput").value.trim();if(!q){toast("请输入道号");return}if(!user){toast("请先登录");return}
+  try{
+    var{data,error}=await SB.from("profiles").select("*").ilike("username","%"+q+"%").limit(10);
+    if(error){toast("搜索失败");return}
+    var list=$("frList");
+    if(!data||data.length===0){list.innerHTML='<div class="lem">未找到道友</div>';return}
+    var me=profile?profile.username:"";var h="";
+    data.forEach(function(p){h+='<div class="friendItem"><div><div class="fn">'+p.username+'</div><div class="fr">'+RL[p.realm_stage||0].name+'</div></div>';if(p.username!==me)h+='<button onclick="addFriend(\''+p.id+'\')">添加</button>';h+='</div>'});
+    list.innerHTML=h;
+  }catch(e){toast("搜索出错")}
+}
+
+async function addFriend(fid){
+  if(!user)return;
+  try{var{error}=await SB.from("friendships").insert({user_id:user.id,friend_id:fid});if(error){toast("添加失败："+error.message)}else{toast("已发送好友请求")}}catch(e){toast("添加出错")}
+}
+
+async function loadFriends(){
+  if(!user){$("frList").innerHTML='<div class="lem">请先登录</div>';return}
+  try{
+    var{data,error}=await SB.from("friendships").select("friend_id, profiles!friend_id(username, realm_stage)").eq("user_id",user.id);
+    if(error||!data){$("frList").innerHTML='<div class="lem">暂无好友</div>';return}
+    var h="";data.forEach(function(f){var p=f.profiles;h+='<div class="friendItem"><div><div class="fn">'+(p?p.username:"未知")+'</div><div class="fr">'+RL[p?p.realm_stage||0:0].name+'</div></div></div>'});
+    if(!h)h='<div class="lem">暂无好友</div>';$("frList").innerHTML=h;
+  }catch(e){$("frList").innerHTML='<div class="lem">加载失败</div>'}
+}
+
+async function loadLeaderboard(){
+  try{
+    var{data,error}=await SB.from("profiles").select("username,spirit_stones,realm_stage").order("spirit_stones",{ascending:false}).limit(50);
+    var tb=$("lbBody");if(!data||data.length===0){tb.innerHTML='<tr><td class="lem" colspan="4">暂无数据</td></tr>';return}
+    var h="";data.forEach(function(p,i){var isMe=profile&&p.username===profile.username;h+='<tr class="'+(isMe?"me":"")+'"><td class="rank">'+(i+1)+'</td><td>'+p.username+'</td><td>'+RL[p.realm_stage||0].name+'</td><td>'+p.spirit_stones+' 灵石</td></tr>'});
+    tb.innerHTML=h;
+  }catch(e){$("lbBody").innerHTML='<tr><td class="lem" colspan="4">加载失败</td></tr>'}
+}
+
+
+var authMode="login";
+function showAuth(){$("authOverlay").classList.remove("hidden")}
+function hideAuth(){$("authOverlay").classList.add("hidden")}
+
+$("authSwitch").addEventListener("click",function(){
+  authMode=authMode==="login"?"register":"login";
+  $("authTitle").textContent=authMode==="login"?"登 录":"注 册";
+  $("authUsername").style.display=authMode==="login"?"none":"block";
+  $("authSubmit").textContent=authMode==="login"?"登录":"注册";
+  $("authSwitch").textContent=authMode==="login"?"还没有账号？去注册":"已有账号？去登录";
+});
+
+$("authSubmit").addEventListener("click",async function(){
+  var email=$("authEmail").value.trim();
+  var password=$("authPassword").value;
+  var username=$("authUsername").value.trim();
+  if(!email||!password){toast("请填写邮箱和密码");return}
+  if(!SB){toast("正在连接仙盟，请稍后再试");return}
+  if(authMode==="register"){
+    if(!username){toast("请填写修炼道号");return}
+    try{
+      var{data:sd,error}=await SB.auth.signUp({email:email,password:password});
+      if(error){toast("注册失败："+error.message);return}
+      if(!sd.user){toast("注册返回异常");return}
+      var{error:pe}=await SB.from("profiles").insert({id:sd.user.id,username:username});
+      if(pe){toast("创建资料失败："+pe.message);return}
+      if(sd.session){user=sd.user;await loadProfile();hideAuth();$("mainApp").style.display="";initApp();toast("注册成功！欢迎踏入仙途")}
+      else{toast("注册成功！请检查邮箱确认")}
+    }catch(e){toast("网络错误："+e.message)}
+  }else{
+    try{
+      var{data:ld,error:le}=await SB.auth.signInWithPassword({email:email,password:password});
+      if(le){toast("登录失败："+le.message);return}
+      user=ld.user;await loadProfile();hideAuth();$("mainApp").style.display="";initApp();
+    }catch(e){toast("网络错误："+e.message)}
+  }
+});
+
+function initApp(){
+  loadG();
+  if(!G.settings.focusTime)G.settings.focusTime=25;
+  if(!G.settings.breakTime)G.settings.breakTime=5;
+  if(!G.settings.sgQuota)G.settings.sgQuota=3;
+  sec=G.settings.focusTime*60;total=sec;
+  $("userName").textContent=profile?profile.username:(user?user.email:"");
+  $("setFocus").value=G.settings.focusTime;
+  $("setBreak").value=G.settings.breakTime;
+  $("setSgQuota").value=G.settings.sgQuota;
+  $("setSgPenalty").value=G.sg.penalty;
+  $("projectName").value=G.projectName;
+  uP();renderLog();uShop();buildRealmHelp();
+  setInterval(syncProfile,60000);
+}
+
+$("introBtn").addEventListener("click",function(){
+  sndI();$("intro").classList.add("hide");
+  setTimeout(function(){$("intro").style.display="none";showAuth()},800);
+});
+
+$("logoutBtn").addEventListener("click",async function(){
+  if(SB)await SB.auth.signOut();user=null;profile=null;
+  $("mainApp").style.display="none";showAuth();
+  $("authEmail").value="";$("authPassword").value="";$("authUsername").value="";
+});
+
+$("btnStart").addEventListener("click",function(){
+  if(state==="idle"){sndS();sT("focusing")}
+  else if(state==="focusing"||state==="breaking"){
+    if(G.sg.active){toast("闭关中无法暂停");return}
+    clearInterval(timer);this.dataset.prev=state;state="paused";uT();
+  }else if(state==="paused"){sndS();sT(this.dataset.prev||"focusing")}
+});
+
+$("btnSkip").addEventListener("click",skipTimer);
+$("sgBtn").addEventListener("click",function(){if(G.sg.active){endSG(true)}else{startSG()}});
+$("sgOk").addEventListener("click",function(){$("sgOverlay").classList.remove("sh")});
+
+$("settingsBtn").addEventListener("click",function(){
+  var p=$("settingsPanel");p.classList.toggle("sh");
+  if(p.classList.contains("sh")){$("setFocus").value=G.settings.focusTime;$("setBreak").value=G.settings.breakTime;$("setSgQuota").value=G.settings.sgQuota;$("setSgPenalty").value=G.sg.penalty}
+});
+
+$("saveSettings").addEventListener("click",function(){
+  G.settings.focusTime=Math.max(1,Math.min(120,parseInt($("setFocus").value)||25));
+  G.settings.breakTime=Math.max(1,Math.min(60,parseInt($("setBreak").value)||5));
+  G.settings.sgQuota=Math.max(0,Math.min(5,parseInt($("setSgQuota").value)||3));
+  G.sg.penalty=parseInt($("setSgPenalty").value);
+  $("settingsPanel").classList.remove("sh");
+  if(state==="idle"){sec=G.settings.focusTime*60;total=sec;uT()}
+  saveG();toast("设置已保存");
+});
+
+$("shopClose").addEventListener("click",function(){$("shopOverlay").classList.remove("sh")});
+$("shopOverlay").addEventListener("click",function(e){if(e.target===this)$("shopOverlay").classList.remove("sh")});
+
+$("psBtn").addEventListener("click",function(){renderPS();$("psOverlay").classList.add("sh")});
+$("psClose").addEventListener("click",function(){$("psOverlay").classList.remove("sh")});
+$("psOverlay").addEventListener("click",function(e){if(e.target===this)$("psOverlay").classList.remove("sh")});
+$("psSaveBtn").addEventListener("click",savePS);
+
+$("imBack").addEventListener("click",function(){if(G.sg.active){endSG(true)}else{$("immersive").classList.remove("sh")}});
+document.addEventListener("visibilitychange",function(){if(G.sg.active&&document.hidden)endSG(true)});
+
+$("frSearchBtn").addEventListener("click",searchFriend);
+$("projectName").addEventListener("input",function(){G.projectName=this.value});
+
+$("realmHelp").addEventListener("click",function(){$("rHelpOverlay").classList.add("sh");buildRealmHelp()});
+$("rHelpClose").addEventListener("click",function(){$("rHelpOverlay").classList.remove("sh")});
+$("rHelpOverlay").addEventListener("click",function(e){if(e.target===this)$("rHelpOverlay").classList.remove("sh")});
+
+document.querySelectorAll(".tab").forEach(function(t){
+  t.addEventListener("click",function(){
+    document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("ac")});
+    t.classList.add("ac");var tg=t.dataset.tab;
+    document.querySelectorAll(".tc").forEach(function(x){x.classList.remove("ac")});
+    if(tg==="cultivation")$("tabCultivation").classList.add("ac");
+    else if(tg==="log"){$("tabLog").classList.add("ac");renderLog()}
+    else if(tg==="friends"){$("tabFriends").classList.add("ac");if(user)loadFriends()}
+    else if(tg==="leaderboard"){$("tabLeaderboard").classList.add("ac");loadLeaderboard()}
+  });
+});
+
+$("stonesDisplay").addEventListener("click",function(){uShop();$("shopOverlay").classList.add("sh")});
+
+function checkStreak(){
+  var today=new Date().toDateString();
+  if(G.sg.lastDate!==today){
+    var yesterday=new Date(Date.now()-86400000).toDateString();
+    if(G.sg.lastDate===yesterday){G.sg.streakDays++}else{G.sg.streakDays=1}
+    G.sg.lastDate=today;G.sg.exitsToday=0;G.sg.noBreakToday=true;saveG();
+  }
+}
+checkStreak();
+</script>
+</body>
+</html>
